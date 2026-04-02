@@ -23,14 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate test results JSON
-        run: |
-          # Create a static test-results.json if not present
-          if [ ! -f test-results.json ]; then
-            echo "[]" > test-results.json
-          fi
-          cp test-results.json public/test-results.json
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
