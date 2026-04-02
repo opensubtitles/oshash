@@ -23,13 +23,13 @@ hash = file_size + sum_uint64_le(first_64KB) + sum_uint64_le(last_64KB)
 
 | Category | Languages |
 |----------|-----------|
-| **Systems** | C, C++, Rust, Zig, Go, D, Nim, Crystal, Swift |
-| **JVM** | Java, Kotlin, Scala, Groovy, Clojure |
-| **.NET** | C#, F# |
-| **Scripting** | Python, Node.js, TypeScript, Ruby, PHP, Perl, Lua, Elixir, R, Dart, Julia, Raku |
-| **Shell** | Bash, PowerShell |
-| **Functional** | Haskell, OCaml, Common Lisp |
-| **Other** | Pascal, Vala, Fortran, V, x86-64 Assembly |
+| **Systems** | [C](implementations/c/oshash.c), [C++](implementations/cpp/oshash.cpp), [Rust](implementations/rust/src/main.rs), [Zig](implementations/zig/oshash.zig), [Go](implementations/go/oshash.go), [D](implementations/d/oshash.d), [Nim](implementations/nim/oshash.nim), [Crystal](implementations/crystal/oshash.cr), [Swift](implementations/swift/oshash.swift) |
+| **JVM** | [Java](implementations/java/OSHash.java), [Kotlin](implementations/kotlin/oshash.kt), [Scala](implementations/scala/oshash.scala), [Groovy](implementations/groovy/oshash.groovy), [Clojure](implementations/clojure/oshash.clj) |
+| **.NET** | [C#](implementations/csharp/oshash.cs), [F#](implementations/fsharp/oshash.fsx) |
+| **Scripting** | [Python](implementations/python/oshash.py), [Node.js](implementations/nodejs/oshash.js), [TypeScript](implementations/typescript/oshash.ts), [Ruby](implementations/ruby/oshash.rb), [PHP](implementations/php/oshash.php), [Perl](implementations/perl/oshash.pl), [Lua](implementations/lua/oshash.lua), [Elixir](implementations/elixir/oshash.exs), [R](implementations/r/oshash.R), [Dart](implementations/dart/oshash.dart), [Julia](implementations/julia/oshash.jl), [Raku](implementations/raku/oshash.raku) |
+| **Shell** | [Bash](implementations/bash/oshash.sh), [PowerShell](implementations/powershell/oshash.ps1) |
+| **Functional** | [Haskell](implementations/haskell/oshash.hs), [OCaml](implementations/ocaml/oshash.ml), [Common Lisp](implementations/lisp/oshash.lisp) |
+| **Other** | [Pascal](implementations/pascal/oshash.pas), [Vala](implementations/vala/oshash.vala), [Fortran](implementations/fortran/oshash.f90), [V](implementations/vlang/oshash.v), [x86-64 Assembly](implementations/asm/oshash.asm) |
 
 Every implementation:
 - Takes a file path as a CLI argument
