@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenSubtitles Hash - Source Codes &amp; Reference</title>
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>OpenSubtitles Hash (OSHash)</h1>
+            <p class="subtitle">Implementation reference, verified test suite &amp; security analysis</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="toc">
+            <a href="#algorithm">Algorithm</a>
+            <a href="#history">History</a>
+            <a href="#test-vectors">Test Vectors</a>
+            <a href="#security">Security</a>
+            <a href="#results">Results</a>
+            <a href="#implementations">Implementations</a>
+        </nav>
+
+        <section id="algorithm" class="algorithm">
+            <h2>Algorithm</h2>
+            <div class="algo-box">
+                <code>hash = file_size + sum_uint64_le(first_64KB) + sum_uint64_le(last_64KB)</code>
+                <p>
+                    The hash calculates: <strong>file size + 64-bit checksum of the first and last 64 KB</strong>
+                    (even if they overlap because the file is smaller than 128 KB).
+                    All arithmetic is unsigned 64-bit with natural overflow (wrapping).
+                    Data is read as <strong>little-endian</strong> <code>uint64</code> values (8192 values per chunk).
+                </p>
+                <p>
+                    <strong>File size requirement:</strong> minimum 131,072 bytes (128 KB).
+                    Files smaller than this cannot be hashed.
+                </p>
+            </div>
+        </section>
+
+        <section id="history">
+            <h2>History</h2>
+            <div class="history-box">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">~2004</div>
+                        <div class="timeline-text">
+                            <strong>Origin in Media Player Classic.</strong>
+                            The hash algorithm was first implemented in
+                            <a href="https://github.com/mpc-hc/mpc-hc" target="_blank">Media Player Classic</a> (MPC-HC),
+                            an open-source media player for Windows created by Gabest
+                            (<a href="https://sourceforge.net/projects/guliverkli/" target="_blank">Guliverkli project</a>).
+                            The algorithm was designed to quickly identify video files for automatic subtitle matching &mdash;
+                            prioritizing speed over collision resistance. The name "Gibest hash" (sometimes "Gabest hash") comes from this origin.
+                            The original C++ implementation can be found in
+                            <a href="https://github.com/mpc-hc/mpc-hc/blob/develop/src/mpc-hc/SubtitlesProvidersUtils.cpp#L791" target="_blank">SubtitlesProvidersUtils.cpp</a>
+                            (the <code>GenerateOSHash</code> function).
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2006</div>
+                        <div class="timeline-text">
+                            <strong>Adopted by <a href="https://www.opensubtitles.org" target="_blank">OpenSubtitles.org</a>.</strong>
+                            OpenSubtitles adopted the hash as the primary file identification method for their
+                            <a href="https://trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC" target="_blank">XML-RPC API</a>.
+                            It became the standard way for media players and subtitle tools to look up
+                            subtitles automatically. The hash, combined with file size, creates a lookup key in
+                            the OpenSubtitles database. The original
+                            <a href="https://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes" target="_blank">hash source codes wiki page</a>
+                            collected community implementations.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2006&ndash;2020</div>
+                        <div class="timeline-text">
+                            <strong>Widespread adoption.</strong>
+                            Implementations appeared in dozens of languages. Media players like
+                            <a href="https://www.videolan.org/vlc/" target="_blank">VLC</a>,
+                            <a href="https://kodi.tv/" target="_blank">Kodi</a>,
+                            <a href="https://www.plex.tv/" target="_blank">Plex</a>,
+                            <a href="https://www.stremio.com/" target="_blank">Stremio</a>,
+                            and many subtitle tools (e.g.
+                            <a href="https://github.com/bazarr/bazarr" target="_blank">Bazarr</a>,
+                            <a href="https://www.sublight.me/" target="_blank">Sublight</a>)
+                            integrated the hash for automatic subtitle downloads. The algorithm's
+                            simplicity made it easy to port, though some early implementations contained bugs
+                            (especially around 64-bit overflow handling in PHP, JavaScript, and Perl).
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2023+</div>
+                        <div class="timeline-text">
+                            <strong><a href="https://opensubtitles.stoplight.io/docs/opensubtitles-api/open_api" target="_blank">OpenSubtitles REST API (v2)</a>.</strong>
+                            The newer REST API continues to support OSHash-based lookups alongside moviehash.
+                            The hash remains relevant for backwards compatibility and is still the fastest
+                            identification method for local files.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="test-vectors" class="test-vectors">
+            <h2>Test Vectors</h2>
+            <table class="vectors-table">
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Size (bytes)</th>
+                        <th>Expected Hash</th>
+                        <th>Download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>breakdance.avi</code></td>
+                        <td>12,909,756</td>
+                        <td><code>8e245d9679d31e12</code></td>
+                        <td><a href="/downloads/breakdance.avi" class="dl-link">Download (12.3 MB)</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>dummy.rar</code></td>
+                        <td>4,295,033,890</td>
+                        <td><code>61f7751fc2a72bfb</code></td>
+                        <td><a href="/downloads/dummy.rar" class="dl-link">Download RAR (2.4 MB)</a><br><span class="dl-note">Unpack to get the 4 GB test file</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="test-note">
+                Always verify your implementation against the <code>breakdance.avi</code> test file before deployment.
+                Many implementations floating around the internet have subtle bugs, especially with 64-bit overflow handling.
+            </p>
+        </section>
+
+        <section id="security">
+            <h2>Limitations &amp; Security</h2>
+            <div class="security-grid">
+                <div class="sec-card warn">
+                    <h3>Not Cryptographic</h3>
+                    <p>OSHash is <strong>not</strong> a cryptographic hash. It was designed for speed, not security.
+                    Do not use it for integrity verification, authentication, or any security-sensitive purpose.
+                    Use SHA-256 or BLAKE3 for those.</p>
+                </div>
+                <div class="sec-card warn">
+                    <h3>Trivial Collisions</h3>
+                    <p>Two files with the same size, same first 64 KB, and same last 64 KB will produce the same hash,
+                    regardless of what's in the middle. This means ~99.99% of the file content is not hashed for typical
+                    video files.</p>
+                </div>
+                <div class="sec-card danger">
+                    <h3>Hash Forgery</h3>
+                    <p>An attacker can craft a file with any desired hash by manipulating the first or last 64 KB.
+                    Since the hash is just addition, finding a preimage is trivial arithmetic, not a computational puzzle.
+                    You can also transplant the head/tail of one file onto another.</p>
+                </div>
+                <div class="sec-card danger">
+                    <h3>Second Preimage Attack</h3>
+                    <p>Given a file and its hash, creating a different file with the same hash is trivial:
+                    keep the same size, copy the first and last 64 KB, and put anything in the middle.
+                    This makes the hash unsuitable for verifying file authenticity.</p>
+                </div>
+                <div class="sec-card info">
+                    <h3>Appropriate Use Cases</h3>
+                    <p>OSHash is well-suited for: <strong>subtitle database lookups</strong>, <strong>media library deduplication</strong>
+                    (combined with file size), and <strong>quick file identification</strong> in trusted environments.
+                    Its O(1) read cost (always 128 KB regardless of file size) is its main advantage.</p>
+                </div>
+                <div class="sec-card info">
+                    <h3>Performance Profile</h3>
+                    <p>Only reads 128 KB total, regardless of file size. Hashing a 50 GB file takes the same
+                    time as hashing a 200 KB file. No CPU-intensive cryptographic operations &mdash; just integer
+                    addition. Typically completes in under 1 ms for local files.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="results" class="test-results">
+            <div id="results-summary"></div>
+        </section>
+
+        <section id="implementations" class="implementations">
+            <h2>Implementations</h2>
+            <div id="filter-bar" class="lang-filter" style="display:none">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="PASS">Verified</button>
+                <button class="filter-btn" data-filter="FAIL">Failed</button>
+                <button class="filter-btn" data-filter="SKIP">Skipped</button>
+            </div>
+            <div id="implementations-list"></div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Originally from <a href="https://trac.opensubtitles.org/opensubtitles/wiki/HashSourceCodes">OpenSubtitles Trac</a>.
+            All implementations rewritten, verified, and extended with modern languages.</p>
+            <p class="footer-ts" id="footer-ts"></p>
+        </div>
+    </footer>
+
+    <script src="app.js?v=4"></script>
+</body>
+</html>

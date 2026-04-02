@@ -1,0 +1,16 @@
+{
+  "name": "opensubtitles-hash",
+  "version": "1.0.0",
+  "description": "OpenSubtitles Hash - Implementation reference & test suite",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "test": "bash test_all.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "chokidar": "^5.0.0"
+  }
+}
