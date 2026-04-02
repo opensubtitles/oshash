@@ -51,7 +51,7 @@ let sourceCache = {};
 
 async function init() {
     try {
-        const res = await fetch('/test-results.json');
+        const res = await fetch('test-results.json');
         if (res.ok) testResults = await res.json();
     } catch (e) {}
 
@@ -185,7 +185,7 @@ async function loadSource(langId) {
 
     // Try local API first (dev server), fall back to GitHub raw
     const urls = [
-        `/api/source/${langId}`,
+        `api/source/${langId}`,
         `https://raw.githubusercontent.com/opensubtitles/oshash/main/implementations/${SOURCE_FILES[langId]}`
     ];
 
