@@ -99,9 +99,10 @@
                         <div class="timeline-year">2023+</div>
                         <div class="timeline-text">
                             <strong><a href="https://opensubtitles.stoplight.io/docs/opensubtitles-api/open_api" target="_blank">OpenSubtitles REST API (v2)</a>.</strong>
-                            The newer REST API continues to support OSHash-based lookups alongside moviehash.
-                            The hash remains relevant for backwards compatibility and is still the fastest
-                            identification method for local files.
+                            The newer REST API still uses this hash for file lookups &mdash; it's the
+                            <code>moviehash</code> parameter (and the <code>moviehash_match</code> flag on results).
+                            "moviehash" is simply the API's name for OSHash; they are the same algorithm.
+                            It remains the fastest identification method for local files.
                         </div>
                     </div>
                 </div>
@@ -135,8 +136,13 @@
                 </tbody>
             </table>
             <p class="test-note">
-                Always verify your implementation against the <code>breakdance.avi</code> test file before deployment.
-                Many implementations floating around the internet have subtle bugs, especially with 64-bit overflow handling.
+                Verify your implementation against <strong>both</strong> files before deployment.
+                <code>breakdance.avi</code> confirms the basic algorithm, but the
+                <strong>4&nbsp;GB</strong> file (from <code>dummy.rar</code>) is the important one:
+                its size exceeds 2<sup>32</sup>, so it's the only vector that exposes the
+                <strong>64-bit overflow / large-file seek bugs</strong> that plague many
+                implementations floating around the internet &mdash; a hash that's correct on
+                <code>breakdance.avi</code> can still be wrong here.
             </p>
         </section>
 
