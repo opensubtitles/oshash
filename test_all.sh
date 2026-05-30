@@ -157,16 +157,24 @@ run_test() {
 
         tmp_stderr=$(mktemp)
         if [ -n "$TIME_BIN" ] && [ "$timed" -eq 0 ]; then
-            # Time the run against the first reference vector.
-            local tmp_time=$(mktemp)
-            result=$(set -o pipefail; "$TIME_BIN" -f '%e|%P|%M' -o "$tmp_time" \
-                timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null 2>"$tmp_stderr" | tr -d '[:space:]')
+            # Time the run against the first reference vector. Wall time comes
+            # from a millisecond-resolution clock bracket (GNU time's %e is only
+            # 2 decimals, too coarse for the fast compiled binaries); CPU% and
+            # peak RSS still come from GNU time. Output goes to a file rather
+            # than a pipe so no subshell/tr fork lands inside the timed window.
+            local tmp_time=$(mktemp) tmp_out=$(mktemp) t0 t1
+            t0=$(date +%s.%N)
+            "$TIME_BIN" -f '%P|%M' -o "$tmp_time" \
+                timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null >"$tmp_out" 2>"$tmp_stderr"
             exit_code=$?
+            t1=$(date +%s.%N)
+            result=$(tr -d '[:space:]' < "$tmp_out")
             if [ "$exit_code" -eq 0 ] && [ -s "$tmp_time" ]; then
-                IFS='|' read -r secs cpu mem < "$tmp_time"
-                mem=$(awk "BEGIN{printf \"%.1f\", ${mem:-0}/1024}")  # KB -> MB
+                IFS='|' read -r cpu mem < "$tmp_time"
+                mem=$(awk "BEGIN{printf \"%.1f\", ${mem:-0}/1024}")        # KB -> MB
+                secs=$(awk "BEGIN{printf \"%.3f\", $t1 - $t0}")           # seconds, ms resolution
             fi
-            rm -f "$tmp_time"
+            rm -f "$tmp_time" "$tmp_out"
             timed=1
         else
             result=$(set -o pipefail; timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null 2>"$tmp_stderr" | tr -d '[:space:]')
@@ -205,6 +213,18 @@ print_header
 printf "  ${BOLD}%-20s%-7s%8s %6s %10s${NC}\n" "Language" "Result" "Time" "CPU" "Mem"
 echo -e "  ─────────────────────────────────────────────────────"
 
+# ─── Implementations are listed alphabetically (matching public/app.js) ───
+
+# AWK (gawk)
+run_test "awk" "AWK" \
+    "" \
+    "gawk -f $IMPL_DIR/awk/oshash.awk"
+
+# Bash
+run_test "bash" "Bash" \
+    "" \
+    "bash $IMPL_DIR/bash/oshash.sh" 120
+
 # C
 run_test "c" "C" \
     "gcc -o $IMPL_DIR/c/oshash $IMPL_DIR/c/oshash.c" \
@@ -215,150 +235,10 @@ run_test "cpp" "C++" \
     "g++ -o $IMPL_DIR/cpp/oshash $IMPL_DIR/cpp/oshash.cpp" \
     "$IMPL_DIR/cpp/oshash"
 
-# Python
-run_test "python" "Python" \
-    "" \
-    "python3 $IMPL_DIR/python/oshash.py"
-
-# Node.js
-run_test "nodejs" "Node.js" \
-    "" \
-    "node $IMPL_DIR/nodejs/oshash.js"
-
-# TypeScript (runs as JS via node, suppress module warnings)
-run_test "typescript" "TypeScript" \
-    "" \
-    "node --no-warnings $IMPL_DIR/typescript/oshash.ts"
-
-# Perl
-run_test "perl" "Perl" \
-    "" \
-    "perl $IMPL_DIR/perl/oshash.pl"
-
-# Bash
-run_test "bash" "Bash" \
-    "" \
-    "bash $IMPL_DIR/bash/oshash.sh" 120
-
-# PHP
-run_test "php" "PHP" \
-    "" \
-    "php $IMPL_DIR/php/oshash.php"
-
-# Ruby
-run_test "ruby" "Ruby" \
-    "" \
-    "ruby $IMPL_DIR/ruby/oshash.rb"
-
-# Lua
-run_test "lua" "Lua" \
-    "" \
-    "lua5.3 $IMPL_DIR/lua/oshash.lua"
-
-# Java
-run_test "java" "Java" \
-    "javac -d $IMPL_DIR/java $IMPL_DIR/java/OSHash.java" \
-    "java -cp $IMPL_DIR/java OSHash"
-
-# Kotlin
-run_test "kotlin" "Kotlin" \
-    "kotlinc $IMPL_DIR/kotlin/oshash.kt -include-runtime -d $IMPL_DIR/kotlin/oshash.jar 2>/dev/null" \
-    "java -jar $IMPL_DIR/kotlin/oshash.jar" 120
-
-# Scala
-run_test "scala" "Scala" \
-    "scalac -d $IMPL_DIR/scala $IMPL_DIR/scala/oshash.scala 2>/dev/null" \
-    "scala -cp $IMPL_DIR/scala OSHash"
-
-# Groovy
-run_test "groovy" "Groovy" \
-    "" \
-    "groovy $IMPL_DIR/groovy/oshash.groovy"
-
-# Go
-run_test "go" "Go" \
-    "go build -o $IMPL_DIR/go/oshash $IMPL_DIR/go/oshash.go" \
-    "$IMPL_DIR/go/oshash"
-
-# Rust
-run_test "rust" "Rust" \
-    "cd $IMPL_DIR/rust && cargo build --release -q 2>&1 | tail -1" \
-    "$IMPL_DIR/rust/target/release/oshash"
-
 # C# (Mono)
 run_test "csharp" "C#" \
     "mcs -out:$IMPL_DIR/csharp/oshash.exe $IMPL_DIR/csharp/oshash.cs" \
     "mono $IMPL_DIR/csharp/oshash.exe"
-
-# Free Pascal
-run_test "pascal" "Pascal" \
-    "fpc -o$IMPL_DIR/pascal/oshash $IMPL_DIR/pascal/oshash.pas -v0 2>/dev/null" \
-    "$IMPL_DIR/pascal/oshash"
-
-# Haskell (pre-compiled binary, GHC removed to save space)
-run_test "haskell" "Haskell" \
-    "" \
-    "$IMPL_DIR/haskell/oshash"
-
-# Common Lisp (SBCL)
-run_test "lisp" "Common Lisp" \
-    "" \
-    "sbcl --script $IMPL_DIR/lisp/oshash.lisp"
-
-# Vala
-run_test "vala" "Vala" \
-    "valac --pkg gio-2.0 -o $IMPL_DIR/vala/oshash $IMPL_DIR/vala/oshash.vala 2>/dev/null" \
-    "$IMPL_DIR/vala/oshash"
-
-# PowerShell
-run_test "powershell" "PowerShell" \
-    "" \
-    "pwsh -File $IMPL_DIR/powershell/oshash.ps1 -Path"
-
-# Dart
-run_test "dart" "Dart" \
-    "" \
-    "dart run $IMPL_DIR/dart/oshash.dart"
-
-# R
-run_test "r" "R" \
-    "" \
-    "Rscript $IMPL_DIR/r/oshash.R"
-
-# Elixir
-run_test "elixir" "Elixir" \
-    "" \
-    "elixir $IMPL_DIR/elixir/oshash.exs"
-
-# Nim
-run_test "nim" "Nim" \
-    "nim c -d:release -o:$IMPL_DIR/nim/oshash $IMPL_DIR/nim/oshash.nim 2>/dev/null" \
-    "$IMPL_DIR/nim/oshash"
-
-# Zig
-run_test "zig" "Zig" \
-    "zig build-exe -O ReleaseFast $IMPL_DIR/zig/oshash.zig -femit-bin=$IMPL_DIR/zig/oshash 2>/dev/null" \
-    "$IMPL_DIR/zig/oshash"
-
-# Swift
-run_test "swift" "Swift" \
-    "swiftc -O -o $IMPL_DIR/swift/oshash $IMPL_DIR/swift/oshash.swift 2>/dev/null" \
-    "$IMPL_DIR/swift/oshash" 60
-
-# Crystal
-run_test "crystal" "Crystal" \
-    "crystal build --release -o $IMPL_DIR/crystal/oshash $IMPL_DIR/crystal/oshash.cr 2>/dev/null" \
-    "$IMPL_DIR/crystal/oshash" 60
-
-# Julia
-run_test "julia" "Julia" \
-    "" \
-    "julia $IMPL_DIR/julia/oshash.jl" 60
-
-# D
-run_test "d" "D" \
-    "ldc2 -of=$IMPL_DIR/d/oshash $IMPL_DIR/d/oshash.d 2>/dev/null" \
-    "$IMPL_DIR/d/oshash"
 
 # Clojure
 CLOJURE_CP="/home/claude/local/clojure/clojure.jar:/home/claude/local/clojure/spec.alpha.jar:/home/claude/local/clojure/core.specs.alpha.jar"
@@ -366,10 +246,35 @@ run_test "clojure" "Clojure" \
     "" \
     "java -cp $CLOJURE_CP clojure.main $IMPL_DIR/clojure/oshash.clj" 60
 
-# OCaml
-run_test "ocaml" "OCaml" \
-    "ocamlopt -o $IMPL_DIR/ocaml/oshash $IMPL_DIR/ocaml/oshash.ml 2>/dev/null" \
-    "$IMPL_DIR/ocaml/oshash"
+# Common Lisp (SBCL)
+run_test "lisp" "Common Lisp" \
+    "" \
+    "sbcl --script $IMPL_DIR/lisp/oshash.lisp"
+
+# Crystal
+run_test "crystal" "Crystal" \
+    "crystal build --release -o $IMPL_DIR/crystal/oshash $IMPL_DIR/crystal/oshash.cr 2>/dev/null" \
+    "$IMPL_DIR/crystal/oshash" 60
+
+# D
+run_test "d" "D" \
+    "ldc2 -of=$IMPL_DIR/d/oshash $IMPL_DIR/d/oshash.d 2>/dev/null" \
+    "$IMPL_DIR/d/oshash"
+
+# Dart
+run_test "dart" "Dart" \
+    "" \
+    "dart run $IMPL_DIR/dart/oshash.dart"
+
+# Elixir
+run_test "elixir" "Elixir" \
+    "" \
+    "elixir $IMPL_DIR/elixir/oshash.exs"
+
+# Erlang
+run_test "erlang" "Erlang" \
+    "" \
+    "escript $IMPL_DIR/erlang/oshash.erl"
 
 # F#
 run_test "fsharp" "F#" \
@@ -381,35 +286,140 @@ run_test "fortran" "Fortran" \
     "gfortran -O2 -o $IMPL_DIR/fortran/oshash $IMPL_DIR/fortran/oshash.f90 2>/dev/null" \
     "$IMPL_DIR/fortran/oshash"
 
-# x86-64 Assembly (NASM)
-run_test "asm" "x86-64 Assembly" \
-    "nasm -f elf64 -o $IMPL_DIR/asm/oshash.o $IMPL_DIR/asm/oshash.asm && ld -o $IMPL_DIR/asm/oshash $IMPL_DIR/asm/oshash.o" \
-    "$IMPL_DIR/asm/oshash"
+# Go
+run_test "go" "Go" \
+    "go build -o $IMPL_DIR/go/oshash $IMPL_DIR/go/oshash.go" \
+    "$IMPL_DIR/go/oshash"
+
+# Groovy
+run_test "groovy" "Groovy" \
+    "" \
+    "groovy $IMPL_DIR/groovy/oshash.groovy"
+
+# Haskell (pre-compiled binary, GHC removed to save space)
+run_test "haskell" "Haskell" \
+    "" \
+    "$IMPL_DIR/haskell/oshash"
+
+# Java
+run_test "java" "Java" \
+    "javac -d $IMPL_DIR/java $IMPL_DIR/java/OSHash.java" \
+    "java -cp $IMPL_DIR/java OSHash"
+
+# Julia
+run_test "julia" "Julia" \
+    "" \
+    "julia $IMPL_DIR/julia/oshash.jl" 60
+
+# Kotlin
+run_test "kotlin" "Kotlin" \
+    "kotlinc $IMPL_DIR/kotlin/oshash.kt -include-runtime -d $IMPL_DIR/kotlin/oshash.jar 2>/dev/null" \
+    "java -jar $IMPL_DIR/kotlin/oshash.jar" 120
+
+# Lua
+run_test "lua" "Lua" \
+    "" \
+    "lua5.3 $IMPL_DIR/lua/oshash.lua"
+
+# Nim
+run_test "nim" "Nim" \
+    "nim c -d:release -o:$IMPL_DIR/nim/oshash $IMPL_DIR/nim/oshash.nim 2>/dev/null" \
+    "$IMPL_DIR/nim/oshash"
+
+# Node.js
+run_test "nodejs" "Node.js" \
+    "" \
+    "node $IMPL_DIR/nodejs/oshash.js"
+
+# OCaml
+run_test "ocaml" "OCaml" \
+    "ocamlopt -o $IMPL_DIR/ocaml/oshash $IMPL_DIR/ocaml/oshash.ml 2>/dev/null" \
+    "$IMPL_DIR/ocaml/oshash"
+
+# Pascal (Free Pascal)
+run_test "pascal" "Pascal" \
+    "fpc -o$IMPL_DIR/pascal/oshash $IMPL_DIR/pascal/oshash.pas -v0 2>/dev/null" \
+    "$IMPL_DIR/pascal/oshash"
+
+# Perl
+run_test "perl" "Perl" \
+    "" \
+    "perl $IMPL_DIR/perl/oshash.pl"
+
+# PHP
+run_test "php" "PHP" \
+    "" \
+    "php $IMPL_DIR/php/oshash.php"
+
+# PowerShell
+run_test "powershell" "PowerShell" \
+    "" \
+    "pwsh -File $IMPL_DIR/powershell/oshash.ps1 -Path"
+
+# Python
+run_test "python" "Python" \
+    "" \
+    "python3 $IMPL_DIR/python/oshash.py"
+
+# R
+run_test "r" "R" \
+    "" \
+    "Rscript $IMPL_DIR/r/oshash.R"
 
 # Raku
 run_test "raku" "Raku" \
     "" \
     "raku $IMPL_DIR/raku/oshash.raku" 60
 
-# V
-run_test "vlang" "V" \
-    "v -o $IMPL_DIR/vlang/oshash $IMPL_DIR/vlang/oshash.v 2>/dev/null" \
-    "$IMPL_DIR/vlang/oshash"
-
-# Erlang
-run_test "erlang" "Erlang" \
+# Ruby
+run_test "ruby" "Ruby" \
     "" \
-    "escript $IMPL_DIR/erlang/oshash.erl"
+    "ruby $IMPL_DIR/ruby/oshash.rb"
+
+# Rust
+run_test "rust" "Rust" \
+    "cd $IMPL_DIR/rust && cargo build --release -q 2>&1 | tail -1" \
+    "$IMPL_DIR/rust/target/release/oshash"
+
+# Scala
+run_test "scala" "Scala" \
+    "scalac -d $IMPL_DIR/scala $IMPL_DIR/scala/oshash.scala 2>/dev/null" \
+    "scala -cp $IMPL_DIR/scala OSHash"
+
+# Swift
+run_test "swift" "Swift" \
+    "swiftc -O -o $IMPL_DIR/swift/oshash $IMPL_DIR/swift/oshash.swift 2>/dev/null" \
+    "$IMPL_DIR/swift/oshash" 60
 
 # Tcl
 run_test "tcl" "Tcl" \
     "" \
     "tclsh $IMPL_DIR/tcl/oshash.tcl"
 
-# AWK (gawk)
-run_test "awk" "AWK" \
+# TypeScript (runs as JS via node, suppress module warnings)
+run_test "typescript" "TypeScript" \
     "" \
-    "gawk -f $IMPL_DIR/awk/oshash.awk"
+    "node --no-warnings $IMPL_DIR/typescript/oshash.ts"
+
+# V
+run_test "vlang" "V" \
+    "v -o $IMPL_DIR/vlang/oshash $IMPL_DIR/vlang/oshash.v 2>/dev/null" \
+    "$IMPL_DIR/vlang/oshash"
+
+# Vala
+run_test "vala" "Vala" \
+    "valac --pkg gio-2.0 -o $IMPL_DIR/vala/oshash $IMPL_DIR/vala/oshash.vala 2>/dev/null" \
+    "$IMPL_DIR/vala/oshash"
+
+# x86-64 Assembly (NASM)
+run_test "asm" "x86-64 Assembly" \
+    "nasm -f elf64 -o $IMPL_DIR/asm/oshash.o $IMPL_DIR/asm/oshash.asm && ld -o $IMPL_DIR/asm/oshash $IMPL_DIR/asm/oshash.o" \
+    "$IMPL_DIR/asm/oshash"
+
+# Zig
+run_test "zig" "Zig" \
+    "zig build-exe -O ReleaseFast $IMPL_DIR/zig/oshash.zig -femit-bin=$IMPL_DIR/zig/oshash 2>/dev/null" \
+    "$IMPL_DIR/zig/oshash"
 
 echo ""
 echo -e "${BOLD}───────────────────────────────────────────────────────────────${NC}"
