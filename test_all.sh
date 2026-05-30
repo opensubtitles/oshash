@@ -226,9 +226,9 @@ printf "  ${BOLD}%-20s%-7s%8s %6s %10s${NC}\n" "Language" "Result" "Time" "CPU" 
 echo -e "  ─────────────────────────────────────────────────────"
 
 # ─── Implementations are listed alphabetically (matching public/app.js) ───
-# Note: Ada, COBOL, Forth, Objective-C, Prolog, Scheme, Smalltalk and Standard
-# ML are built by tools/build_docker_langs.sh (no host toolchain); they SKIP
-# gracefully if that build hasn't been run.
+# Note: Ada, COBOL, Forth, Modula-2, Objective-C, Prolog, Scheme, Smalltalk and
+# Standard ML are built by tools/build_docker_langs.sh (no host toolchain); they
+# SKIP gracefully if that build hasn't been run.
 
 # Ada
 run_test "ada" "Ada" \
@@ -355,6 +355,11 @@ run_test "kotlin" "Kotlin" \
 run_test "lua" "Lua" \
     "" \
     "lua5.3 $IMPL_DIR/lua/oshash.lua"
+
+# Modula-2 (GNU Modula-2) — built by tools/build_docker_langs.sh
+run_test "modula2" "Modula-2" \
+    "" \
+    "$IMPL_DIR/modula2/oshash"
 
 # Nim
 run_test "nim" "Nim" \

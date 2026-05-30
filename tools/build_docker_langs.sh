@@ -85,12 +85,18 @@ cd /repo/implementations/smalltalk
 cp -f "$(command -v gst)" gst-bin
 cp -f /usr/lib/gnu-smalltalk/gst.im gst.im
 bundle_libs gst-bin
+
+# Modula-2 (GNU Modula-2) — native binary, bundle the m2 runtime libs
+cd /repo/implementations/modula2
+gm2 -O2 -o oshash oshash.mod -flibs=m2pim,m2iso
+bundle_libs oshash
+strip oshash 2>/dev/null || true
 '
 
 BD="$REPO/public/downloads/breakdance.avi"
 I="$REPO/implementations"
 echo "Built (verifying against breakdance.avi, expect 8e245d9679d31e12):"
-for d in ada objc scheme sml cobol prolog; do
+for d in ada objc scheme sml cobol prolog modula2; do
     [ -x "$I/$d/oshash" ] && printf "  %-10s %s\n" "$d" "$("$I/$d/oshash" "$BD" 2>/dev/null)"
 done
 [ -x "$I/forth/gforth-bin" ] && printf "  %-10s %s\n" "forth" \

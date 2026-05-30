@@ -24,6 +24,7 @@ const LANGUAGES = [
     { id: 'julia', name: 'Julia', isNew: true },
     { id: 'kotlin', name: 'Kotlin', original: true },
     { id: 'lua', name: 'Lua', original: true },
+    { id: 'modula2', name: 'Modula-2', isNew: true },
     { id: 'nim', name: 'Nim', isNew: true },
     { id: 'objc', name: 'Objective-C', isNew: true },
     { id: 'ocaml', name: 'OCaml', isNew: true },
@@ -225,6 +226,7 @@ const SOURCE_FILES = {
     'ada': 'ada/oshash.adb', 'scheme': 'scheme/oshash.scm',
     'objc': 'objc/oshash.m', 'sml': 'sml/oshash.sml', 'cobol': 'cobol/oshash.cob',
     'forth': 'forth/oshash.fs', 'prolog': 'prolog/oshash.pl', 'smalltalk': 'smalltalk/oshash.st',
+    'modula2': 'modula2/oshash.mod',
 };
 
 async function loadSource(langId) {
