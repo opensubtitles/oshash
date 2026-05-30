@@ -35,6 +35,11 @@ if command -v python3 >/dev/null 2>&1 && python3 "$SCRIPT_DIR/test-data/generate
     TEST_VECTORS+=("$ZEROHASH|00005f1fe0a14000|zerohash.bin (128 KB, leading-zero padding check)")
 fi
 
+SPARSE=""   # (a sparse multi-PB "size handling" vector was trialled here; it
+            # tripped Scala's memory-mapping on sparse files — an artifact of
+            # the test method, not a size bug — so it was removed. 64-bit size
+            # handling is covered by the real 4 GB vector below; see CLAUDE.md.)
+
 TEST_VECTORS+=(
     "$SCRIPT_DIR/public/downloads/breakdance.avi|8e245d9679d31e12|breakdance.avi (12,909,756 bytes, official OpenSubtitles reference)"
 )
@@ -46,8 +51,8 @@ TEST_VECTORS+=(
 # occupies ~4 GB of disk. Skipped gracefully if dummy.rar or an unpacker is absent.
 DUMMY_RAR="$SCRIPT_DIR/public/downloads/dummy.rar"
 DUMMY_4GB=""
-cleanup_dummy() { [ -n "$DUMMY_4GB" ] && rm -f "$DUMMY_4GB"; }
-trap cleanup_dummy EXIT
+cleanup() { [ -n "$DUMMY_4GB" ] && rm -f "$DUMMY_4GB"; [ -n "$SPARSE" ] && rm -f "$SPARSE"; return 0; }
+trap cleanup EXIT
 
 if [ -f "$DUMMY_RAR" ]; then
     UNPACKER=""

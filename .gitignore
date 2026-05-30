@@ -40,6 +40,7 @@ test-data/testfile.bin
 test-data/testfile_small.bin
 test-data/dummy-4gb.bin
 test-data/zerohash.bin
+test-data/sparse-size.bin
 
 implementations/scala/*.tasty
 

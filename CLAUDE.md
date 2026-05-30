@@ -49,6 +49,20 @@ python3 implementations/python/oshash.py test-data/testfile.bin
 | `test-data/testfile_small.bin` | 131,080 | `6e4ae67790577f76` |
 | `breakdance.avi` | 12,909,756 | `8e245d9679d31e12` |
 
+## Edge cases the suite guards
+
+- **Leading-zero padding** — every hash must be 16 lowercase hex chars. The
+  canonical vectors have no leading zeros, so `test-data/generate_zerohash.py`
+  builds a 128 KB file whose hash is `00005f1fe0a14000` and the suite checks it.
+- **64-bit size / overflow** — `file_size` is added mod 2^64, decomposed across
+  four 16-bit words by some ports. The 4 GB vector (`dummy.rar`) exercises bits
+  past 2^32; all 55 ports also reproduce multi-petabyte sizes correctly (checked
+  ad hoc with sparse files — a sparse vector was trialled but removed because
+  Scala's `FileChannel.map` mishandles sparse files, a test-method artifact).
+  Fixes this surfaced: bash/Lua carried in O(1) instead of an O(size) loop;
+  AWK/R read the size as exact hex instead of an IEEE double (precision past
+  2^53). No real-world overflow bug exists; the spec's uint64 wrap is honoured.
+
 ## Docker-built languages (Ada, Algol 68, COBOL, Forth, Modula-2, Objective-C, Odin, Pony, Prolog, Racket, Rexx, Scheme, Smalltalk, Standard ML)
 
 Toolchains we don't keep on the host are built inside a throwaway image

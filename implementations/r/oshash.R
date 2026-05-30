@@ -22,9 +22,18 @@ compute_hash <- function(filepath) {
   con <- file(filepath, "rb")
   on.exit(close(con))
 
-  # Split into hi/lo 32-bit halves
-  lo <- fsize %% (2^32)
-  hi <- floor(fsize / (2^32))
+  # Seed hi/lo from the size as exact hex (file.info()$size is a double and
+  # loses precision past 2^53; shell printf renders the full uint64). Each
+  # 8-hex half is < 2^32, exact in a double.
+  sizehex <- system(paste0("printf '%016x' \"$(stat -c%s '", filepath, "')\""),
+                    intern = TRUE)
+  phex <- function(h) {
+    v <- 0
+    for (i in seq_len(nchar(h))) v <- v * 16 + strtoi(substr(h, i, i), 16L)
+    v
+  }
+  hi <- phex(substr(sizehex, 1, 8))
+  lo <- phex(substr(sizehex, 9, 16))
 
   add_to_hash <- function(bytes8) {
     v_lo <- as.numeric(bytes8[1]) + as.numeric(bytes8[2]) * 256 +

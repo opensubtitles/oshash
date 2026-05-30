@@ -42,15 +42,13 @@ local function compute_hash(fileName)
         end
     end
 
-    -- Add file size
-    lo = lo + size
-    while lo >= 4294967296 do
-        lo = lo - 4294967296
-        hi = hi + 1
-    end
-    while hi >= 4294967296 do
-        hi = hi - 4294967296
-    end
+    -- Add file size. Split into 32-bit halves and carry in O(1): a subtraction
+    -- loop here would run size/2^32 times (billions for a multi-EB file), and
+    -- lo + size could also overflow Lua's 64-bit integer.
+    hi = hi + (size // 4294967296)
+    lo = lo + (size % 4294967296)
+    hi = (hi + (lo // 4294967296)) % 4294967296
+    lo = lo % 4294967296
 
     fil:close()
     return string.format("%08x%08x", hi, lo), size

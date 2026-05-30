@@ -4,13 +4,10 @@
 
 correct_64bit() {
     local pow32=$(( 1 << 32 ))
-    while [ "$g_lo" -ge $pow32 ]; do
-        g_lo=$(( g_lo - pow32 ))
-        g_hi=$(( g_hi + 1 ))
-    done
-    while [ "$g_hi" -ge $pow32 ]; do
-        g_hi=$(( g_hi - pow32 ))
-    done
+    # Carry the overflow out of g_lo in O(1) (a loop here is O(value/2^32),
+    # which crawls when the file size alone is many TB).
+    g_hi=$(( (g_hi + g_lo / pow32) % pow32 ))
+    g_lo=$(( g_lo % pow32 ))
 }
 
 hash_part() {
