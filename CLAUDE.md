@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-A reference site for the OpenSubtitles Hash (OSHash) algorithm with verified implementations in 38 languages. Hosted at opensubtitles.github.io/oshash via GitHub Pages. Dev server runs on port 3005.
+A reference site for the OpenSubtitles Hash (OSHash) algorithm with verified implementations in 41 languages. Hosted at opensubtitles.github.io/oshash via GitHub Pages. Dev server runs on port 3005.
 
 The OSHash algorithm: `hash = file_size + sum_uint64_le(first_64KB) + sum_uint64_le(last_64KB)` — unsigned 64-bit wrapping addition over little-endian uint64 values.
 
@@ -14,7 +14,7 @@ The OSHash algorithm: `hash = file_size + sum_uint64_le(first_64KB) + sum_uint64
 # Dev server with live reload (watches public/ for changes)
 node server.js --dev
 
-# Run the full test suite (compiles + runs all 35 implementations)
+# Run the full test suite (compiles + runs all 41 implementations)
 bash test_all.sh
 
 # Test a single implementation

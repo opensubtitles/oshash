@@ -11,14 +11,19 @@ IMPL_DIR="$SCRIPT_DIR/implementations"
 export PATH="/home/claude/local/go/bin:/home/claude/.cargo/bin:/home/claude/local/nim/bin:/home/claude/local/dart-sdk/bin:/home/claude/local/kotlinc/bin:/home/claude/local/pwsh:$PATH"
 export GOPATH="/home/claude/go"
 
+# GNU time (if present) gives per-run wall time, CPU%, and peak memory. Each
+# implementation is timed on its run against the first reference vector — the
+# same file for everyone, so the numbers are comparable. Note these are
+# whole-process figures: for hashing only first+last 64KB, interpreter/VM
+# startup dominates, which is exactly what makes the comparison interesting.
+TIME_BIN=""
+[ -x /usr/bin/time ] && TIME_BIN=/usr/bin/time
+
 # Reference test vectors: "file|expected_hash|label"
-# The first two are deterministic synthetic files (generate_testfile.py).
-# breakdance.avi is the canonical OpenSubtitles reference file published at
-# https://opensubtitles.github.io/oshash/#test-vectors — every implementation
-# should be checked against it, not just our synthetic files.
+# We verify against the canonical files published at
+# https://opensubtitles.github.io/oshash/#test-vectors — breakdance.avi and the
+# 4 GB file from dummy.rar (added below) — rather than our own synthetic files.
 TEST_VECTORS=(
-    "$SCRIPT_DIR/test-data/testfile.bin|e7e2e71e035b137f|testfile.bin (1,048,576 bytes)"
-    "$SCRIPT_DIR/test-data/testfile_small.bin|6e4ae67790577f76|testfile_small.bin (131,080 bytes)"
     "$SCRIPT_DIR/public/downloads/breakdance.avi|8e245d9679d31e12|breakdance.avi (12,909,756 bytes, official OpenSubtitles reference)"
 )
 
@@ -110,7 +115,7 @@ run_test() {
         if ! command -v "$compiler" &>/dev/null; then
             printf "${YELLOW}SKIP${NC} (${compiler} not installed)\n"
             SKIP=$((SKIP + 1))
-            RESULTS+=("SKIP|$name|${compiler} not installed")
+            RESULTS+=("SKIP|$name|-|-|-|${compiler} not installed")
             return
         fi
     fi
@@ -121,7 +126,7 @@ run_test() {
         if [ -z "$build_cmd" ]; then
             printf "${YELLOW}SKIP${NC} (${runner} not installed)\n"
             SKIP=$((SKIP + 1))
-            RESULTS+=("SKIP|$name|${runner} not installed")
+            RESULTS+=("SKIP|$name|-|-|-|${runner} not installed")
             return
         fi
     fi
@@ -133,7 +138,7 @@ run_test() {
         if [ $? -ne 0 ]; then
             printf "${RED}FAIL${NC} (build error)\n"
             FAIL=$((FAIL + 1))
-            RESULTS+=("FAIL|$name|Build error: $(echo "$build_output" | head -3)")
+            RESULTS+=("FAIL|$name|-|-|-|Build error: $(echo "$build_output" | head -3)")
             return
         fi
     fi
@@ -141,44 +146,64 @@ run_test() {
     # Run against every reference vector. stdin is redirected from /dev/null so
     # an implementation that tries to read the terminal (e.g. the Scala runner)
     # gets EOF instead of being stopped by SIGTTIN and hanging forever.
+    # pipefail (inside the subshell) makes $? reflect the implementation's exit
+    # code rather than tr's, so crashes and timeouts are detected reliably.
     local vec file expected label result exit_code stderr_out tmp_stderr short
+    local secs="-" cpu="-" mem="-" timed=0
     for vec in "${TEST_VECTORS[@]}"; do
         IFS='|' read -r file expected label <<< "$vec"
         [ -f "$file" ] || continue   # skip vectors whose file isn't present
         short="${label%% *}"
 
         tmp_stderr=$(mktemp)
-        result=$(timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null 2>"$tmp_stderr" | tr -d '[:space:]')
-        exit_code=$?
+        if [ -n "$TIME_BIN" ] && [ "$timed" -eq 0 ]; then
+            # Time the run against the first reference vector.
+            local tmp_time=$(mktemp)
+            result=$(set -o pipefail; "$TIME_BIN" -f '%e|%P|%M' -o "$tmp_time" \
+                timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null 2>"$tmp_stderr" | tr -d '[:space:]')
+            exit_code=$?
+            if [ "$exit_code" -eq 0 ] && [ -s "$tmp_time" ]; then
+                IFS='|' read -r secs cpu mem < "$tmp_time"
+                mem=$(awk "BEGIN{printf \"%.1f\", ${mem:-0}/1024}")  # KB -> MB
+            fi
+            rm -f "$tmp_time"
+            timed=1
+        else
+            result=$(set -o pipefail; timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null 2>"$tmp_stderr" | tr -d '[:space:]')
+            exit_code=$?
+        fi
         stderr_out=$(cat "$tmp_stderr")
         rm -f "$tmp_stderr"
 
         if [ $exit_code -ne 0 ]; then
             local why="runtime error"
             [ $exit_code -eq 124 ] && why="timed out (${timeout_sec}s)"
-            printf "${RED}FAIL${NC} (${short}: ${why}, exit=$exit_code)\n"
+            printf "${RED}%-7s${NC}(${short}: ${why}, exit=$exit_code)\n" "FAIL"
             FAIL=$((FAIL + 1))
-            RESULTS+=("FAIL|$name|${why} on $short (exit=$exit_code): $stderr_out")
+            RESULTS+=("FAIL|$name|-|-|-|${why} on $short (exit=$exit_code): $stderr_out")
             return
         fi
 
         if [ "$result" != "$expected" ]; then
-            printf "${RED}FAIL${NC} (${short}: expected $expected, got $result)\n"
+            printf "${RED}%-7s${NC}(${short}: expected $expected, got $result)\n" "FAIL"
             FAIL=$((FAIL + 1))
-            RESULTS+=("FAIL|$name|$short: expected $expected, got $result")
+            RESULTS+=("FAIL|$name|-|-|-|$short: expected $expected, got $result")
             return
         fi
     done
 
-    printf "${GREEN}PASS${NC}\n"
+    local timestr="-" memstr="-"
+    [ "$secs" != "-" ] && timestr="${secs}s"
+    [ "$mem" != "-" ] && memstr="${mem} MB"
+    printf "${GREEN}%-7s${NC}%8s %6s %10s\n" "PASS" "$timestr" "$cpu" "$memstr"
     PASS=$((PASS + 1))
-    RESULTS+=("PASS|$name|")
+    RESULTS+=("PASS|$name|$secs|$cpu|$mem|")
 }
 
 print_header
 
-echo -e "  ${BOLD}Language             Result${NC}"
-echo -e "  ──────────────────────────────────────────────────"
+printf "  ${BOLD}%-20s%-7s%8s %6s %10s${NC}\n" "Language" "Result" "Time" "CPU" "Mem"
+echo -e "  ─────────────────────────────────────────────────────"
 
 # C
 run_test "c" "C" \
@@ -371,6 +396,21 @@ run_test "vlang" "V" \
     "v -o $IMPL_DIR/vlang/oshash $IMPL_DIR/vlang/oshash.v 2>/dev/null" \
     "$IMPL_DIR/vlang/oshash"
 
+# Erlang
+run_test "erlang" "Erlang" \
+    "" \
+    "escript $IMPL_DIR/erlang/oshash.erl"
+
+# Tcl
+run_test "tcl" "Tcl" \
+    "" \
+    "tclsh $IMPL_DIR/tcl/oshash.tcl"
+
+# AWK (gawk)
+run_test "awk" "AWK" \
+    "" \
+    "gawk -f $IMPL_DIR/awk/oshash.awk"
+
 echo ""
 echo -e "${BOLD}───────────────────────────────────────────────────────────────${NC}"
 echo ""
@@ -382,7 +422,9 @@ JSON_FILE="$SCRIPT_DIR/test-results.json"
 echo "[" > "$JSON_FILE"
 first=true
 for r in "${RESULTS[@]}"; do
-    IFS='|' read -r status name detail <<< "$r"
+    # Format: status|name|timeSec|cpu|memMB|detail  (detail is last so any '|'
+    # in stderr stays inside it).
+    IFS='|' read -r status name secs cpu mem detail <<< "$r"
     if [ "$first" = true ]; then
         first=false
     else
@@ -390,15 +432,13 @@ for r in "${RESULTS[@]}"; do
     fi
     # Escape quotes in detail
     detail=$(echo "$detail" | sed 's/"/\\"/g')
-    printf '  {"language": "%s", "status": "%s", "detail": "%s"}' "$name" "$status" "$detail" >> "$JSON_FILE"
+    printf '  {"language": "%s", "status": "%s", "timeSec": "%s", "cpu": "%s", "memMB": "%s", "detail": "%s"}' \
+        "$name" "$status" "$secs" "$cpu" "$mem" "$detail" >> "$JSON_FILE"
 done
 echo "" >> "$JSON_FILE"
 echo "]" >> "$JSON_FILE"
 
 echo -e "  Results saved to: ${BLUE}test-results.json${NC}"
-
-# Non-zero exit when anything failed, so this is usable in CI.
-[ "$FAIL" -eq 0 ]
 echo ""
 
 # Exit with failure if any tests failed

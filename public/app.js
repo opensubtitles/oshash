@@ -1,4 +1,5 @@
 const LANGUAGES = [
+    { id: 'awk', name: 'AWK', isNew: true },
     { id: 'bash', name: 'Bash', original: true },
     { id: 'c', name: 'C', original: true },
     { id: 'cpp', name: 'C++', original: true },
@@ -9,6 +10,7 @@ const LANGUAGES = [
     { id: 'd', name: 'D', isNew: true },
     { id: 'dart', name: 'Dart', original: true },
     { id: 'elixir', name: 'Elixir', isNew: true },
+    { id: 'erlang', name: 'Erlang', isNew: true },
     { id: 'fsharp', name: 'F#', isNew: true },
     { id: 'fortran', name: 'Fortran', isNew: true },
     { id: 'go', name: 'Go', original: true },
@@ -32,6 +34,7 @@ const LANGUAGES = [
     { id: 'rust', name: 'Rust', original: true },
     { id: 'scala', name: 'Scala', original: true },
     { id: 'swift', name: 'Swift', original: true },
+    { id: 'tcl', name: 'Tcl', isNew: true },
     { id: 'typescript', name: 'TypeScript', isNew: true },
     { id: 'vlang', name: 'V', isNew: true },
     { id: 'vala', name: 'Vala', original: true },
@@ -61,6 +64,12 @@ function getStatus(langName) {
 function getDetail(langName) {
     const r = testResults.find(r => r.language === langName);
     return r ? r.detail : '';
+}
+
+function getMetrics(langName) {
+    const r = testResults.find(r => r.language === langName);
+    if (!r || r.status !== 'PASS' || !r.timeSec || r.timeSec === '-') return null;
+    return { time: r.timeSec, cpu: r.cpu, mem: r.memMB };
 }
 
 function renderSummary() {
@@ -104,6 +113,7 @@ function renderImplementations(filter = 'all') {
         if (filter !== 'all' && status !== filter) continue;
 
         const detail = getDetail(lang.name);
+        const m = getMetrics(lang.name);
         const card = document.createElement('div');
         card.className = 'impl-card';
         card.dataset.status = status;
@@ -112,11 +122,18 @@ function renderImplementations(filter = 'all') {
         card.innerHTML = `
             <div class="impl-header" onclick="toggleCard(this)">
                 <span class="impl-lang">${lang.name}${lang.isNew ? '<span class="impl-new">NEW</span>' : ''}</span>
+                ${m ? `<span class="impl-time" title="Run time hashing breakdance.avi">${m.time}s</span>` : ''}
                 <span class="impl-badge ${status.toLowerCase()}">${status}</span>
                 <span class="impl-toggle">&#9660;</span>
             </div>
             <div class="impl-body">
                 ${detail ? `<div class="impl-detail">${escapeHtml(detail)}</div>` : ''}
+                ${m ? `<div class="impl-metrics">
+                    <span class="metric"><span class="metric-label">Time</span><span class="metric-val">${m.time}s</span></span>
+                    <span class="metric"><span class="metric-label">CPU</span><span class="metric-val">${m.cpu}</span></span>
+                    <span class="metric"><span class="metric-label">Peak memory</span><span class="metric-val">${m.mem} MB</span></span>
+                    <span class="metric-note">whole-process, hashing breakdance.avi (12.9&nbsp;MB)</span>
+                </div>` : ''}
                 <div class="impl-code-wrap">
                     <button class="copy-btn" onclick="copySource('${lang.id}', this)" title="Copy to clipboard">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -167,6 +184,7 @@ const SOURCE_FILES = {
     'clojure': 'clojure/oshash.clj', 'ocaml': 'ocaml/oshash.ml',
     'fsharp': 'fsharp/oshash.fsx', 'fortran': 'fortran/oshash.f90',
     'asm': 'asm/oshash.asm', 'raku': 'raku/oshash.raku', 'vlang': 'vlang/oshash.v',
+    'erlang': 'erlang/oshash.erl', 'tcl': 'tcl/oshash.tcl', 'awk': 'awk/oshash.awk',
 };
 
 async function loadSource(langId) {

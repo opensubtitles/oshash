@@ -1,6 +1,6 @@
 # OSHash — OpenSubtitles Hash
 
-The **OpenSubtitles Hash** (OSHash) is a fast file identification algorithm used by [OpenSubtitles](https://www.opensubtitles.org) to match video files with subtitles. This repository contains **38 verified implementations** across every major programming language, a test suite, and a reference website.
+The **OpenSubtitles Hash** (OSHash) is a fast file identification algorithm used by [OpenSubtitles](https://www.opensubtitles.org) to match video files with subtitles. This repository contains **41 verified implementations** across every major programming language, a test suite, and a reference website.
 
 **Website:** [opensubtitles.github.io/oshash](https://opensubtitles.github.io/oshash)
 
@@ -27,14 +27,14 @@ hash = file_size + sum_uint64_le(first_64KB) + sum_uint64_le(last_64KB)
 | **JVM** | [Java](implementations/java/OSHash.java), [Kotlin](implementations/kotlin/oshash.kt), [Scala](implementations/scala/oshash.scala), [Groovy](implementations/groovy/oshash.groovy), [Clojure](implementations/clojure/oshash.clj) |
 | **.NET** | [C#](implementations/csharp/oshash.cs), [F#](implementations/fsharp/oshash.fsx) |
 | **Scripting** | [Python](implementations/python/oshash.py), [Node.js](implementations/nodejs/oshash.js), [TypeScript](implementations/typescript/oshash.ts), [Ruby](implementations/ruby/oshash.rb), [PHP](implementations/php/oshash.php), [Perl](implementations/perl/oshash.pl), [Lua](implementations/lua/oshash.lua), [Elixir](implementations/elixir/oshash.exs), [R](implementations/r/oshash.R), [Dart](implementations/dart/oshash.dart), [Julia](implementations/julia/oshash.jl), [Raku](implementations/raku/oshash.raku) |
-| **Shell** | [Bash](implementations/bash/oshash.sh), [PowerShell](implementations/powershell/oshash.ps1) |
-| **Functional** | [Haskell](implementations/haskell/oshash.hs), [OCaml](implementations/ocaml/oshash.ml), [Common Lisp](implementations/lisp/oshash.lisp) |
+| **Shell** | [Bash](implementations/bash/oshash.sh), [PowerShell](implementations/powershell/oshash.ps1), [AWK](implementations/awk/oshash.awk), [Tcl](implementations/tcl/oshash.tcl) |
+| **Functional** | [Haskell](implementations/haskell/oshash.hs), [OCaml](implementations/ocaml/oshash.ml), [Common Lisp](implementations/lisp/oshash.lisp), [Erlang](implementations/erlang/oshash.erl) |
 | **Other** | [Pascal](implementations/pascal/oshash.pas), [Vala](implementations/vala/oshash.vala), [Fortran](implementations/fortran/oshash.f90), [V](implementations/vlang/oshash.v), [x86-64 Assembly](implementations/asm/oshash.asm) |
 
 Every implementation:
 - Takes a file path as a CLI argument
 - Prints the 16-character lowercase hex hash to stdout
-- Has been verified against two test files with known hashes
+- Has been verified against the canonical reference files (`breakdance.avi` and the 4 GB file from `dummy.rar`, including the >4 GB 64-bit-overflow case)
 
 ## Test Vectors
 

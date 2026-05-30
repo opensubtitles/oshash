@@ -528,6 +528,50 @@ h2 {
     background: var(--surface2);
 }
 
+/* Compact run time shown in the card header (right-aligned next to badge). */
+.impl-time {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+}
+
+/* Expanded performance metrics inside the card body. */
+.impl-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 22px;
+    padding: 12px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+}
+
+.impl-metrics .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.impl-metrics .metric-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+}
+
+.impl-metrics .metric-val {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--accent);
+}
+
+.impl-metrics .metric-note {
+    margin-left: auto;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    align-self: center;
+}
+
 /* ───── Footer ───── */
 footer {
     padding: 36px 0;
