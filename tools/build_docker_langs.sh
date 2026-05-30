@@ -108,6 +108,17 @@ strip oshash 2>/dev/null || true
 cd /repo/implementations/algol68
 cp -f "$(command -v a68g)" a68g-bin
 bundle_libs a68g-bin
+
+# Rexx (Regina) — the rexx interpreter is statically linked; just bundle it
+cd /repo/implementations/rexx
+cp -f "$(command -v rexx)" rexx-bin
+bundle_libs rexx-bin
+
+# Racket — raco distribute makes a self-contained tree (~48 MB)
+cd /repo/implementations/racket
+raco exe -o oshash-exe oshash.rkt >/dev/null
+rm -rf dist && raco distribute dist oshash-exe >/dev/null
+rm -f oshash-exe
 '
 
 BD="$REPO/public/downloads/breakdance.avi"
@@ -118,6 +129,10 @@ for d in ada objc scheme sml cobol prolog modula2 odin pony; do
 done
 [ -x "$I/algol68/a68g-bin" ] && printf "  %-10s %s\n" "algol68" \
     "$("$I/algol68/a68g-bin" --script "$I/algol68/oshash.a68" "$BD" 2>/dev/null)"
+[ -x "$I/rexx/rexx-bin" ] && printf "  %-10s %s\n" "rexx" \
+    "$("$I/rexx/rexx-bin" "$I/rexx/oshash.rexx" "$BD" 2>/dev/null)"
+[ -x "$I/racket/dist/bin/oshash-exe" ] && printf "  %-10s %s\n" "racket" \
+    "$("$I/racket/dist/bin/oshash-exe" "$BD" 2>/dev/null)"
 [ -x "$I/forth/gforth-bin" ] && printf "  %-10s %s\n" "forth" \
     "$("$I/forth/gforth-bin" --image-file "$I/forth/gforth.fi" "$I/forth/oshash.fs" "$BD" 2>/dev/null)"
 [ -x "$I/smalltalk/gst-bin" ] && printf "  %-10s %s\n" "smalltalk" \

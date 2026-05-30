@@ -38,7 +38,9 @@ const LANGUAGES = [
     { id: 'prolog', name: 'Prolog', isNew: true },
     { id: 'python', name: 'Python', original: true },
     { id: 'r', name: 'R', isNew: true },
+    { id: 'racket', name: 'Racket', isNew: true },
     { id: 'raku', name: 'Raku', isNew: true },
+    { id: 'rexx', name: 'Rexx', isNew: true },
     { id: 'ruby', name: 'Ruby', original: true },
     { id: 'rust', name: 'Rust', original: true },
     { id: 'scala', name: 'Scala', original: true },
@@ -231,6 +233,7 @@ const SOURCE_FILES = {
     'forth': 'forth/oshash.fs', 'prolog': 'prolog/oshash.pl', 'smalltalk': 'smalltalk/oshash.st',
     'modula2': 'modula2/oshash.mod', 'algol68': 'algol68/oshash.a68',
     'odin': 'odin/oshash.odin', 'pony': 'pony/oshash.pony',
+    'racket': 'racket/oshash.rkt', 'rexx': 'rexx/oshash.rexx',
 };
 
 async function loadSource(langId) {

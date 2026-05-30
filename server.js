@@ -92,6 +92,7 @@ function serveSource(lang, res) {
         'forth': 'forth/oshash.fs', 'prolog': 'prolog/oshash.pl', 'smalltalk': 'smalltalk/oshash.st',
         'modula2': 'modula2/oshash.mod', 'algol68': 'algol68/oshash.a68',
         'odin': 'odin/oshash.odin', 'pony': 'pony/oshash.pony',
+        'racket': 'racket/oshash.rkt', 'rexx': 'rexx/oshash.rexx',
     };
 
     const file = fileMap[lang];

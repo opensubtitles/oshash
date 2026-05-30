@@ -54,6 +54,9 @@ implementations/odin/oshash
 implementations/pony/oshash
 implementations/pony/*.o
 implementations/algol68/a68g-bin
+implementations/rexx/rexx-bin
+implementations/racket/oshash-exe
+implementations/racket/dist/
 implementations/forth/gforth-bin
 implementations/forth/gforth.fi
 implementations/smalltalk/gst-bin

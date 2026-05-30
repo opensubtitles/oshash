@@ -22,6 +22,8 @@ RUN sed -i 's/^# deb /deb /' /etc/apt/sources.list && \
         gforth \
         gnu-smalltalk \
         gprolog \
+        regina-rexx \
+        racket \
     && rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/lib/gcc/x86_64-linux-gnu/10/adalib/libgnat.a \
            /usr/lib/gcc/x86_64-linux-gnu/10/adalib/libgnat-10.a

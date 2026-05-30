@@ -227,8 +227,9 @@ echo -e "  ───────────────────────
 
 # ─── Implementations are listed alphabetically (matching public/app.js) ───
 # Note: Ada, Algol 68, COBOL, Forth, Modula-2, Objective-C, Odin, Pony, Prolog,
-# Scheme, Smalltalk and Standard ML are built by tools/build_docker_langs.sh (no
-# host toolchain); they SKIP gracefully if that build hasn't been run.
+# Racket, Rexx, Scheme, Smalltalk and Standard ML are built by
+# tools/build_docker_langs.sh (no host toolchain); they SKIP gracefully if that
+# build hasn't been run.
 
 # Ada
 run_test "ada" "Ada" \
@@ -426,10 +427,20 @@ run_test "r" "R" \
     "" \
     "Rscript $IMPL_DIR/r/oshash.R"
 
+# Racket — built by tools/build_docker_langs.sh
+run_test "racket" "Racket" \
+    "" \
+    "$IMPL_DIR/racket/dist/bin/oshash-exe"
+
 # Raku
 run_test "raku" "Raku" \
     "" \
     "raku $IMPL_DIR/raku/oshash.raku" 60
+
+# Rexx (Regina) — built by tools/build_docker_langs.sh
+run_test "rexx" "Rexx" \
+    "" \
+    "$IMPL_DIR/rexx/rexx-bin $IMPL_DIR/rexx/oshash.rexx"
 
 # Ruby
 run_test "ruby" "Ruby" \
