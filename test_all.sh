@@ -526,7 +526,9 @@ echo -e "  ${GREEN}PASS: $PASS${NC}  ${RED}FAIL: $FAIL${NC}  ${YELLOW}SKIP: $SKI
 echo ""
 
 # JSON output for the web page
-JSON_FILE="$SCRIPT_DIR/test-results.json"
+# Written into public/ so it is both served locally and deployed by GitHub Pages
+# (the site fetches it relative to itself).
+JSON_FILE="$SCRIPT_DIR/public/test-results.json"
 echo "[" > "$JSON_FILE"
 first=true
 for r in "${RESULTS[@]}"; do

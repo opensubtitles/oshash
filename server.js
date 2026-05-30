@@ -36,10 +36,7 @@ const server = http.createServer((req, res) => {
     const urlPath = req.url.split('?')[0];
     let filePath = urlPath === '/' ? '/index.html' : urlPath;
     filePath = path.join(__dirname, 'public', filePath);
-
-    if (urlPath === '/test-results.json') {
-        filePath = path.join(__dirname, 'test-results.json');
-    }
+    // test-results.json lives in public/ (served here and deployed by Pages).
 
     if (urlPath.startsWith('/api/source/')) {
         const lang = urlPath.replace('/api/source/', '');
