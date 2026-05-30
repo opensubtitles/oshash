@@ -8,7 +8,8 @@ sub compute_hash {
     open my $handle, "<:raw", $filename or die "Cannot open $filename: $!";
     my $fsize = -s $filename;
 
-    my $hash = [$fsize & 0xFFFF, ($fsize >> 16) & 0xFFFF, 0, 0];
+    my $hash = [$fsize & 0xFFFF, ($fsize >> 16) & 0xFFFF,
+                ($fsize >> 32) & 0xFFFF, ($fsize >> 48) & 0xFFFF];
 
     $hash = add_uint64($hash, read_uint64($handle)) for (1..8192);
 

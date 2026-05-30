@@ -13,8 +13,8 @@ function computeHash(string $file): string {
     if ($fsize < 65536 * 2) throw new Exception("File too small: $fsize bytes");
 
     $hash = [
-        3 => 0,
-        2 => 0,
+        3 => ($fsize >> 48) & 0xFFFF,
+        2 => ($fsize >> 32) & 0xFFFF,
         1 => ($fsize >> 16) & 0xFFFF,
         0 => $fsize & 0xFFFF
     ];

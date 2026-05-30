@@ -6,16 +6,58 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 IMPL_DIR="$SCRIPT_DIR/implementations"
-TEST_FILE="$SCRIPT_DIR/test-data/testfile.bin"
-TEST_FILE_SMALL="$SCRIPT_DIR/test-data/testfile_small.bin"
 
 # Add custom install paths
 export PATH="/home/claude/local/go/bin:/home/claude/.cargo/bin:/home/claude/local/nim/bin:/home/claude/local/dart-sdk/bin:/home/claude/local/kotlinc/bin:/home/claude/local/pwsh:$PATH"
 export GOPATH="/home/claude/go"
 
-# Reference hashes (verified by C and Python independently)
-EXPECTED_HASH="e7e2e71e035b137f"
-EXPECTED_HASH_SMALL="6e4ae67790577f76"
+# Reference test vectors: "file|expected_hash|label"
+# The first two are deterministic synthetic files (generate_testfile.py).
+# breakdance.avi is the canonical OpenSubtitles reference file published at
+# https://opensubtitles.github.io/oshash/#test-vectors — every implementation
+# should be checked against it, not just our synthetic files.
+TEST_VECTORS=(
+    "$SCRIPT_DIR/test-data/testfile.bin|e7e2e71e035b137f|testfile.bin (1,048,576 bytes)"
+    "$SCRIPT_DIR/test-data/testfile_small.bin|6e4ae67790577f76|testfile_small.bin (131,080 bytes)"
+    "$SCRIPT_DIR/public/downloads/breakdance.avi|8e245d9679d31e12|breakdance.avi (12,909,756 bytes, official OpenSubtitles reference)"
+)
+
+# >4 GB overflow vector. The repo ships dummy.rar (~2.4 MB) which unpacks to a
+# 4,295,033,890-byte file. 64-bit wrap behaviour is the #1 source of buggy
+# implementations (it caught real bugs in the Perl and PHP ports), so we unpack
+# it here, test against it, then delete it on exit so it never permanently
+# occupies ~4 GB of disk. Skipped gracefully if dummy.rar or an unpacker is absent.
+DUMMY_RAR="$SCRIPT_DIR/public/downloads/dummy.rar"
+DUMMY_4GB=""
+cleanup_dummy() { [ -n "$DUMMY_4GB" ] && rm -f "$DUMMY_4GB"; }
+trap cleanup_dummy EXIT
+
+if [ -f "$DUMMY_RAR" ]; then
+    UNPACKER=""
+    command -v unrar >/dev/null 2>&1 && UNPACKER="unrar"
+    [ -z "$UNPACKER" ] && command -v 7z >/dev/null 2>&1 && UNPACKER="7z"
+
+    if [ -n "$UNPACKER" ]; then
+        echo "  Unpacking 4 GB overflow vector from dummy.rar (auto-deleted after run)..."
+        DUMMY_4GB="$SCRIPT_DIR/test-data/dummy-4gb.bin"
+        rm -f "$DUMMY_4GB" "$SCRIPT_DIR/test-data/dummy.bin"
+        if [ "$UNPACKER" = "unrar" ]; then
+            unrar x -inul -o+ "$DUMMY_RAR" "$SCRIPT_DIR/test-data/" >/dev/null 2>&1 || true
+        else
+            7z e -y -o"$SCRIPT_DIR/test-data" "$DUMMY_RAR" >/dev/null 2>&1 || true
+        fi
+        # The archive member is named dummy.bin; normalise to dummy-4gb.bin.
+        [ -f "$SCRIPT_DIR/test-data/dummy.bin" ] && mv -f "$SCRIPT_DIR/test-data/dummy.bin" "$DUMMY_4GB"
+        if [ -f "$DUMMY_4GB" ]; then
+            TEST_VECTORS+=("$DUMMY_4GB|61f7751fc2a72bfb|dummy 4 GB file (>4 GB, 64-bit overflow)")
+        else
+            echo "  (failed to unpack dummy.rar — skipping 4 GB vector)"
+            DUMMY_4GB=""
+        fi
+    else
+        echo "  (no unrar/7z available — skipping 4 GB overflow vector)"
+    fi
+fi
 
 PASS=0
 FAIL=0
@@ -37,10 +79,16 @@ print_header() {
     echo -e "${BOLD}  OpenSubtitles Hash (OSHash) - Implementation Test Suite${NC}"
     echo -e "${BOLD}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "  Test file:     ${BLUE}testfile.bin${NC} (1,048,576 bytes)"
-    echo -e "  Expected hash: ${BLUE}${EXPECTED_HASH}${NC}"
-    echo -e "  Test file 2:   ${BLUE}testfile_small.bin${NC} (131,080 bytes)"
-    echo -e "  Expected hash: ${BLUE}${EXPECTED_HASH_SMALL}${NC}"
+    echo -e "  Each implementation is checked against ${#TEST_VECTORS[@]} reference vector(s):"
+    local vec file expected label
+    for vec in "${TEST_VECTORS[@]}"; do
+        IFS='|' read -r file expected label <<< "$vec"
+        if [ -f "$file" ]; then
+            echo -e "    ${BLUE}${expected}${NC}  ${label}"
+        else
+            echo -e "    ${YELLOW}(skip)${NC}           ${label} ${YELLOW}— file missing${NC}"
+        fi
+    done
     echo ""
     echo -e "${BOLD}───────────────────────────────────────────────────────────────${NC}"
 }
@@ -90,39 +138,37 @@ run_test() {
         fi
     fi
 
-    # Run test 1: main test file
-    local result stderr_out
-    local tmp_stderr=$(mktemp)
-    result=$(timeout "$timeout_sec" bash -c "$run_cmd $TEST_FILE" 2>"$tmp_stderr" | tr -d '[:space:]')
-    local exit_code=$?
-    stderr_out=$(cat "$tmp_stderr")
-    rm -f "$tmp_stderr"
+    # Run against every reference vector. stdin is redirected from /dev/null so
+    # an implementation that tries to read the terminal (e.g. the Scala runner)
+    # gets EOF instead of being stopped by SIGTTIN and hanging forever.
+    local vec file expected label result exit_code stderr_out tmp_stderr short
+    for vec in "${TEST_VECTORS[@]}"; do
+        IFS='|' read -r file expected label <<< "$vec"
+        [ -f "$file" ] || continue   # skip vectors whose file isn't present
+        short="${label%% *}"
 
-    if [ $exit_code -ne 0 ]; then
-        printf "${RED}FAIL${NC} (runtime error, exit=$exit_code)\n"
-        FAIL=$((FAIL + 1))
-        RESULTS+=("FAIL|$name|Runtime error (exit=$exit_code): $stderr_out")
-        return
-    fi
+        tmp_stderr=$(mktemp)
+        result=$(timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null 2>"$tmp_stderr" | tr -d '[:space:]')
+        exit_code=$?
+        stderr_out=$(cat "$tmp_stderr")
+        rm -f "$tmp_stderr"
 
-    if [ "$result" != "$EXPECTED_HASH" ]; then
-        printf "${RED}FAIL${NC} (got: $result)\n"
-        FAIL=$((FAIL + 1))
-        RESULTS+=("FAIL|$name|Expected $EXPECTED_HASH, got $result")
-        return
-    fi
+        if [ $exit_code -ne 0 ]; then
+            local why="runtime error"
+            [ $exit_code -eq 124 ] && why="timed out (${timeout_sec}s)"
+            printf "${RED}FAIL${NC} (${short}: ${why}, exit=$exit_code)\n"
+            FAIL=$((FAIL + 1))
+            RESULTS+=("FAIL|$name|${why} on $short (exit=$exit_code): $stderr_out")
+            return
+        fi
 
-    # Run test 2: small file
-    local result2
-    result2=$(timeout "$timeout_sec" bash -c "$run_cmd $TEST_FILE_SMALL" 2>/dev/null | tr -d '[:space:]')
-
-    local exit_code2=$?
-    if [ $exit_code2 -ne 0 ] || [ "$result2" != "$EXPECTED_HASH_SMALL" ]; then
-        printf "${YELLOW}PARTIAL${NC} (main OK, small file: got $result2)\n"
-        FAIL=$((FAIL + 1))
-        RESULTS+=("FAIL|$name|Main file OK but small file: expected $EXPECTED_HASH_SMALL, got $result2")
-        return
-    fi
+        if [ "$result" != "$expected" ]; then
+            printf "${RED}FAIL${NC} (${short}: expected $expected, got $result)\n"
+            FAIL=$((FAIL + 1))
+            RESULTS+=("FAIL|$name|$short: expected $expected, got $result")
+            return
+        fi
+    done
 
     printf "${GREEN}PASS${NC}\n"
     PASS=$((PASS + 1))
@@ -350,6 +396,9 @@ echo "" >> "$JSON_FILE"
 echo "]" >> "$JSON_FILE"
 
 echo -e "  Results saved to: ${BLUE}test-results.json${NC}"
+
+# Non-zero exit when anything failed, so this is usable in CI.
+[ "$FAIL" -eq 0 ]
 echo ""
 
 # Exit with failure if any tests failed

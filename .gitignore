@@ -35,8 +35,9 @@ implementations/csharp/*.exe
 implementations/fsharp/*.exe
 implementations/vlang/oshash
 
-# Test data (generated, not needed in repo - see README)
+# Test data (generated/unpacked, not needed in repo - see README)
 test-data/testfile.bin
 test-data/testfile_small.bin
+test-data/dummy-4gb.bin
 
 implementations/scala/*.tasty
