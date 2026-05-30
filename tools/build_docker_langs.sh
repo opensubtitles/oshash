@@ -68,13 +68,35 @@ cd /repo/implementations/cobol
 cobc -x -O2 -o oshash oshash.cob
 bundle_libs oshash
 strip oshash 2>/dev/null || true
+
+# GNU Prolog — native binary (links only libc/libm, runs on the host as-is)
+cd /repo/implementations/prolog
+gplc oshash.pl -o oshash
+strip oshash 2>/dev/null || true
+
+# Forth (gforth) — bundle the engine binary + its image
+cd /repo/implementations/forth
+cp -f "$(command -v gforth-fast)" gforth-bin
+cp -f "$(find /usr/lib -name gforth.fi | head -1)" gforth.fi
+bundle_libs gforth-bin
+
+# Smalltalk (GNU Smalltalk) — bundle the VM + its image
+cd /repo/implementations/smalltalk
+cp -f "$(command -v gst)" gst-bin
+cp -f /usr/lib/gnu-smalltalk/gst.im gst.im
+bundle_libs gst-bin
 '
 
+BD="$REPO/public/downloads/breakdance.avi"
+I="$REPO/implementations"
 echo "Built (verifying against breakdance.avi, expect 8e245d9679d31e12):"
-for d in ada objc scheme sml cobol; do
-    bin="$REPO/implementations/$d/oshash"
-    [ -x "$bin" ] && printf "  %-8s %s\n" "$d" "$("$bin" "$REPO/public/downloads/breakdance.avi" 2>&1)"
+for d in ada objc scheme sml cobol prolog; do
+    [ -x "$I/$d/oshash" ] && printf "  %-10s %s\n" "$d" "$("$I/$d/oshash" "$BD" 2>/dev/null)"
 done
+[ -x "$I/forth/gforth-bin" ] && printf "  %-10s %s\n" "forth" \
+    "$("$I/forth/gforth-bin" --image-file "$I/forth/gforth.fi" "$I/forth/oshash.fs" "$BD" 2>/dev/null)"
+[ -x "$I/smalltalk/gst-bin" ] && printf "  %-10s %s\n" "smalltalk" \
+    "$("$I/smalltalk/gst-bin" --image "$I/smalltalk/gst.im" "$I/smalltalk/oshash.st" -a "$BD" 2>/dev/null)"
 
 if [ "$RMI" -eq 1 ]; then
     echo "Removing builder image to reclaim disk..."

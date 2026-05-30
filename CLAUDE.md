@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-A reference site for the OpenSubtitles Hash (OSHash) algorithm with verified implementations in 46 languages. Hosted at opensubtitles.github.io/oshash via GitHub Pages. Dev server runs on port 3005.
+A reference site for the OpenSubtitles Hash (OSHash) algorithm with verified implementations in 49 languages. Hosted at opensubtitles.github.io/oshash via GitHub Pages. Dev server runs on port 3005.
 
-Most implementations run on host toolchains. Five (Ada, COBOL, Objective-C, Scheme, Standard ML) are built inside a throwaway Docker image — see "Docker-built languages" below.
+Most implementations run on host toolchains. Eight (Ada, COBOL, Forth, Objective-C, Prolog, Scheme, Smalltalk, Standard ML) are built inside a throwaway Docker image — see "Docker-built languages" below.
 
 The OSHash algorithm: `hash = file_size + sum_uint64_le(first_64KB) + sum_uint64_le(last_64KB)` — unsigned 64-bit wrapping addition over little-endian uint64 values.
 
@@ -16,7 +16,7 @@ The OSHash algorithm: `hash = file_size + sum_uint64_le(first_64KB) + sum_uint64
 # Dev server with live reload (watches public/ for changes)
 node server.js --dev
 
-# Run the full test suite (compiles + runs all 46 implementations)
+# Run the full test suite (compiles + runs all 49 implementations)
 bash test_all.sh
 
 # Test a single implementation
@@ -49,22 +49,28 @@ python3 implementations/python/oshash.py test-data/testfile.bin
 | `test-data/testfile_small.bin` | 131,080 | `6e4ae67790577f76` |
 | `breakdance.avi` | 12,909,756 | `8e245d9679d31e12` |
 
-## Docker-built languages (Ada, COBOL, Objective-C, Scheme, Standard ML)
+## Docker-built languages (Ada, COBOL, Forth, Objective-C, Prolog, Scheme, Smalltalk, Standard ML)
 
 Toolchains we don't keep on the host are built inside a throwaway image
 (`tools/Dockerfile.builder`, Ubuntu 22.04 so binaries are glibc-compatible).
-`tools/build_docker_langs.sh` compiles each into `implementations/<lang>/oshash`
-as a host-runnable binary — Ada and Objective-C are statically linked; Scheme
-(Gambit), Standard ML (Poly/ML) and COBOL (GnuCOBOL) ship their runtime `.so`s
-beside the binary with an `$ORIGIN` rpath. Pass `--rmi` to delete the image and
-reclaim `/var` afterwards (the binaries persist). These binaries and bundled
-libs are gitignored; `test_all.sh` runs them if present and SKIPs them
-otherwise, so on a fresh clone run the build script first.
+`tools/build_docker_langs.sh` produces a host-runnable artifact for each:
+- Ada, Objective-C — statically linked native binaries.
+- Prolog (GNU Prolog) — native binary (links only libc/libm).
+- Scheme (Gambit), Standard ML (Poly/ML), COBOL (GnuCOBOL) — native binary with
+  their runtime `.so`s bundled beside it via an `$ORIGIN` rpath.
+- Forth (gforth), Smalltalk (GNU Smalltalk) — the VM binary + its image
+  (`gforth.fi` / `gst.im`) are bundled; the run command points at them.
 
-Gotchas worked around: Gambit and Poly/ML can't seek past 2^32 (Poly/ML's
-`lseek` is broken outright), so Scheme, Standard ML and COBOL read the trailing
-64 KB via `tail -c` (like the Bash/AWK ports). COBOL uses `COMP-5` 8-byte fields
-(native little-endian, full 64-bit range) for the uint64 wrap.
+Pass `--rmi` to delete the image and reclaim `/var` afterwards (the artifacts
+persist). All built artifacts are gitignored; `test_all.sh` runs them if present
+and SKIPs them otherwise, so on a fresh clone run the build script first.
+
+Gotchas worked around: Gambit, Poly/ML and GNU Prolog truncate/​break file seeks
+past 2^32, so Scheme, Standard ML, COBOL and Prolog read the trailing 64 KB via
+`tail -c` (like the Bash/AWK ports). COBOL uses `COMP-5` 8-byte fields (native
+little-endian, full 64-bit range) for the uint64 wrap; Prolog keeps the hash as
+four 16-bit words (its integers are tag-limited). Objective-C uses the GNU
+runtime's `Object` root class (no Foundation).
 
 ## Non-Standard Runtime Paths
 

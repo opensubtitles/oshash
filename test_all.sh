@@ -226,9 +226,9 @@ printf "  ${BOLD}%-20s%-7s%8s %6s %10s${NC}\n" "Language" "Result" "Time" "CPU" 
 echo -e "  ─────────────────────────────────────────────────────"
 
 # ─── Implementations are listed alphabetically (matching public/app.js) ───
-# Note: Ada, COBOL, Objective-C, Scheme and Standard ML are built by
-# tools/build_docker_langs.sh (no host toolchain); they SKIP gracefully if that
-# build hasn't been run.
+# Note: Ada, COBOL, Forth, Objective-C, Prolog, Scheme, Smalltalk and Standard
+# ML are built by tools/build_docker_langs.sh (no host toolchain); they SKIP
+# gracefully if that build hasn't been run.
 
 # Ada
 run_test "ada" "Ada" \
@@ -306,6 +306,11 @@ run_test "fsharp" "F#" \
     "fsharpc --nologo -o:$IMPL_DIR/fsharp/oshash.exe $IMPL_DIR/fsharp/oshash.fsx 2>/dev/null" \
     "mono $IMPL_DIR/fsharp/oshash.exe"
 
+# Forth (gforth) — built by tools/build_docker_langs.sh
+run_test "forth" "Forth" \
+    "" \
+    "$IMPL_DIR/forth/gforth-bin --image-file $IMPL_DIR/forth/gforth.fi $IMPL_DIR/forth/oshash.fs"
+
 # Fortran
 run_test "fortran" "Fortran" \
     "gfortran -O2 -o $IMPL_DIR/fortran/oshash $IMPL_DIR/fortran/oshash.f90 2>/dev/null" \
@@ -331,6 +336,11 @@ run_test "java" "Java" \
     "javac -d $IMPL_DIR/java $IMPL_DIR/java/OSHash.java" \
     "java -cp $IMPL_DIR/java OSHash"
 
+# JavaScript (Node.js)
+run_test "nodejs" "JavaScript" \
+    "" \
+    "node $IMPL_DIR/nodejs/oshash.js"
+
 # Julia
 run_test "julia" "Julia" \
     "" \
@@ -350,11 +360,6 @@ run_test "lua" "Lua" \
 run_test "nim" "Nim" \
     "nim c -d:release -o:$IMPL_DIR/nim/oshash $IMPL_DIR/nim/oshash.nim 2>/dev/null" \
     "$IMPL_DIR/nim/oshash"
-
-# Node.js
-run_test "nodejs" "Node.js" \
-    "" \
-    "node $IMPL_DIR/nodejs/oshash.js"
 
 # Objective-C — built by tools/build_docker_langs.sh
 run_test "objc" "Objective-C" \
@@ -385,6 +390,11 @@ run_test "php" "PHP" \
 run_test "powershell" "PowerShell" \
     "" \
     "pwsh -File $IMPL_DIR/powershell/oshash.ps1 -Path"
+
+# Prolog (GNU Prolog) — built by tools/build_docker_langs.sh
+run_test "prolog" "Prolog" \
+    "" \
+    "$IMPL_DIR/prolog/oshash"
 
 # Python
 run_test "python" "Python" \
@@ -420,6 +430,11 @@ run_test "scala" "Scala" \
 run_test "scheme" "Scheme" \
     "" \
     "$IMPL_DIR/scheme/oshash"
+
+# Smalltalk (GNU Smalltalk) — built by tools/build_docker_langs.sh
+run_test "smalltalk" "Smalltalk" \
+    "" \
+    "$IMPL_DIR/smalltalk/gst-bin --image $IMPL_DIR/smalltalk/gst.im $IMPL_DIR/smalltalk/oshash.st -a"
 
 # Standard ML (Poly/ML) — built by tools/build_docker_langs.sh
 run_test "sml" "Standard ML" \

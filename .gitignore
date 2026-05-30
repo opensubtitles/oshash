@@ -48,4 +48,9 @@ implementations/objc/oshash
 implementations/scheme/oshash
 implementations/sml/oshash
 implementations/cobol/oshash
+implementations/prolog/oshash
+implementations/forth/gforth-bin
+implementations/forth/gforth.fi
+implementations/smalltalk/gst-bin
+implementations/smalltalk/gst.im
 implementations/*/lib*.so*
