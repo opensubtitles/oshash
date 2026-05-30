@@ -39,6 +39,7 @@ implementations/vlang/oshash
 test-data/testfile.bin
 test-data/testfile_small.bin
 test-data/dummy-4gb.bin
+test-data/zerohash.bin
 
 implementations/scala/*.tasty
 

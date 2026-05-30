@@ -23,7 +23,19 @@ TIME_BIN=""
 # We verify against the canonical files published at
 # https://opensubtitles.github.io/oshash/#test-vectors — breakdance.avi and the
 # 4 GB file from dummy.rar (added below) — rather than our own synthetic files.
-TEST_VECTORS=(
+TEST_VECTORS=()
+
+# Leading-zero edge case: a crafted 128 KB file whose hash is 00005f1fe0a14000
+# (four leading zero hex digits). Catches implementations that don't zero-pad
+# the hash to 16 characters — the canonical vectors below have no leading zeros
+# so they can't. Generated deterministically at runtime; listed first so it is
+# never picked as the (largest-file) benchmark vector.
+ZEROHASH="$SCRIPT_DIR/test-data/zerohash.bin"
+if command -v python3 >/dev/null 2>&1 && python3 "$SCRIPT_DIR/test-data/generate_zerohash.py" >/dev/null 2>&1; then
+    TEST_VECTORS+=("$ZEROHASH|00005f1fe0a14000|zerohash.bin (128 KB, leading-zero padding check)")
+fi
+
+TEST_VECTORS+=(
     "$SCRIPT_DIR/public/downloads/breakdance.avi|8e245d9679d31e12|breakdance.avi (12,909,756 bytes, official OpenSubtitles reference)"
 )
 
