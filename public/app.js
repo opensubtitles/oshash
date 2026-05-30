@@ -1,4 +1,5 @@
 const LANGUAGES = [
+    { id: 'ada', name: 'Ada', isNew: true },
     { id: 'awk', name: 'AWK', isNew: true },
     { id: 'bash', name: 'Bash', original: true },
     { id: 'c', name: 'C', original: true },
@@ -33,6 +34,7 @@ const LANGUAGES = [
     { id: 'ruby', name: 'Ruby', original: true },
     { id: 'rust', name: 'Rust', original: true },
     { id: 'scala', name: 'Scala', original: true },
+    { id: 'scheme', name: 'Scheme', isNew: true },
     { id: 'swift', name: 'Swift', original: true },
     { id: 'tcl', name: 'Tcl', isNew: true },
     { id: 'typescript', name: 'TypeScript', isNew: true },
@@ -52,8 +54,37 @@ async function init() {
     } catch (e) {}
 
     renderSummary();
+    renderPerformance();
     renderImplementations();
     setupFilters();
+}
+
+function renderPerformance() {
+    const el = document.getElementById('perf-highlights');
+    if (!el) return;
+    const nameOf = id => (LANGUAGES.find(l => l.id === id) || {}).name;
+    const rows = testResults
+        .filter(r => r.status === 'PASS' && r.timeSec && r.timeSec !== '-')
+        .map(r => ({ name: r.language, t: parseFloat(r.timeSec), m: parseFloat(r.memMB) }))
+        .filter(r => !isNaN(r.t) && !isNaN(r.m));
+    if (!rows.length) { el.style.display = 'none'; return; }
+
+    const byTime = [...rows].sort((a, b) => a.t - b.t);
+    const byMem = [...rows].sort((a, b) => a.m - b.m);
+    const slowest = byTime[byTime.length - 1];
+    const heaviest = byMem[byMem.length - 1];
+    // "Fastest" is a cluster of near-instant native binaries, so report the count.
+    const instant = rows.filter(r => r.t <= 0.02).length;
+
+    const card = (label, value, sub) =>
+        `<div class="perf-card"><div class="perf-label">${label}</div>` +
+        `<div class="perf-value">${value}</div><div class="perf-sub">${sub}</div></div>`;
+
+    el.innerHTML =
+        card('Near-instant', `${instant}`, 'native binaries ≤ 0.02 s') +
+        card('Leanest', `${byMem[0].m} MB`, byMem[0].name) +
+        card('Heaviest', `${heaviest.m} MB`, heaviest.name) +
+        card('Slowest', `${slowest.t}s`, slowest.name);
 }
 
 function getStatus(langName) {
@@ -185,6 +216,7 @@ const SOURCE_FILES = {
     'fsharp': 'fsharp/oshash.fsx', 'fortran': 'fortran/oshash.f90',
     'asm': 'asm/oshash.asm', 'raku': 'raku/oshash.raku', 'vlang': 'vlang/oshash.v',
     'erlang': 'erlang/oshash.erl', 'tcl': 'tcl/oshash.tcl', 'awk': 'awk/oshash.awk',
+    'ada': 'ada/oshash.adb', 'scheme': 'scheme/oshash.scm',
 };
 
 async function loadSource(langId) {

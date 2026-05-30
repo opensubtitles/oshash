@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-A reference site for the OpenSubtitles Hash (OSHash) algorithm with verified implementations in 41 languages. Hosted at opensubtitles.github.io/oshash via GitHub Pages. Dev server runs on port 3005.
+A reference site for the OpenSubtitles Hash (OSHash) algorithm with verified implementations in 43 languages. Hosted at opensubtitles.github.io/oshash via GitHub Pages. Dev server runs on port 3005.
+
+Most implementations run on host toolchains. Two (Ada, Scheme) are built inside a throwaway Docker image — see "Docker-built languages" below.
 
 The OSHash algorithm: `hash = file_size + sum_uint64_le(first_64KB) + sum_uint64_le(last_64KB)` — unsigned 64-bit wrapping addition over little-endian uint64 values.
 
@@ -14,7 +16,7 @@ The OSHash algorithm: `hash = file_size + sum_uint64_le(first_64KB) + sum_uint64
 # Dev server with live reload (watches public/ for changes)
 node server.js --dev
 
-# Run the full test suite (compiles + runs all 41 implementations)
+# Run the full test suite (compiles + runs all 43 implementations)
 bash test_all.sh
 
 # Test a single implementation
@@ -46,6 +48,18 @@ python3 implementations/python/oshash.py test-data/testfile.bin
 | `test-data/testfile.bin` | 1,048,576 | `e7e2e71e035b137f` |
 | `test-data/testfile_small.bin` | 131,080 | `6e4ae67790577f76` |
 | `breakdance.avi` | 12,909,756 | `8e245d9679d31e12` |
+
+## Docker-built languages (Ada, Scheme)
+
+Toolchains we don't keep on the host are built inside a throwaway image
+(`tools/Dockerfile.builder`, Ubuntu 22.04 so binaries are glibc-compatible).
+`tools/build_docker_langs.sh` compiles each into `implementations/<lang>/oshash`
+as a host-runnable binary — Ada is statically linked; Scheme/Gambit ships its
+`libgambit.so` beside the binary with an `$ORIGIN` rpath. Pass `--rmi` to delete
+the image and reclaim `/var` afterwards (the binaries persist). These binaries
+are gitignored; `test_all.sh` runs them if present and SKIPs them otherwise, so
+on a fresh clone run the build script first. Gambit can't seek past 2^32, so the
+Scheme port reads the trailing 64 KB via `tail -c` (like the Bash/AWK ports).
 
 ## Non-Standard Runtime Paths
 

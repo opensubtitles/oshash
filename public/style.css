@@ -572,6 +572,58 @@ h2 {
     align-self: center;
 }
 
+/* ───── Performance ───── */
+.perf-intro {
+    color: var(--text-secondary);
+    max-width: 70ch;
+    margin-bottom: 18px;
+}
+
+.perf-highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.perf-card {
+    flex: 1 1 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+}
+
+.perf-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+}
+
+.perf-value {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    color: var(--accent);
+    margin: 4px 0 2px;
+}
+
+.perf-sub { font-size: 0.78rem; color: var(--text-secondary); }
+
+.perf-notes {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    font-size: 0.86rem;
+    color: var(--text-secondary);
+}
+
+.perf-notes ul { margin: 8px 0 0; padding-left: 20px; }
+.perf-notes li { margin-bottom: 8px; }
+.perf-notes strong { color: var(--text); }
+.perf-caveat { margin-top: 12px; color: var(--text-dim); }
+
 /* ───── Footer ───── */
 footer {
     padding: 36px 0;

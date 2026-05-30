@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenSubtitles Hash - Source Codes &amp; Reference</title>
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
     <header>
@@ -21,6 +21,7 @@
             <a href="#test-vectors">Test Vectors</a>
             <a href="#security">Security</a>
             <a href="#results">Results</a>
+            <a href="#performance">Performance</a>
             <a href="#implementations">Implementations</a>
         </nav>
 
@@ -181,6 +182,35 @@
             <div id="results-summary"></div>
         </section>
 
+        <section id="performance" class="performance">
+            <h2>Performance</h2>
+            <p class="perf-intro">
+                Each implementation is timed on the same run — hashing
+                <code>breakdance.avi</code> (12.9&nbsp;MB) on the reference machine.
+                Because OSHash only reads the first and last 64&nbsp;KB, the actual
+                hashing is trivial: these numbers are dominated by
+                <strong>interpreter / VM startup and runtime footprint</strong>, not
+                throughput. That is exactly what makes them interesting — they show
+                the fixed cost of reaching for each language.
+            </p>
+            <div id="perf-highlights" class="perf-highlights"></div>
+            <div class="perf-notes">
+                <p><strong>What the numbers say:</strong></p>
+                <ul>
+                    <li><strong>Native compiled</strong> (C, C++, Rust, Go, Zig, Nim, D, Crystal, Fortran, Pascal, Ada, Assembly, V) all land around <code>~0.01&nbsp;s</code> and <code>3–4&nbsp;MB</code> — essentially just process spawn. They are indistinguishable here; the difference is noise.</li>
+                    <li><strong>Scripting</strong> (Python, Perl, PHP, Ruby, Lua, Tcl, AWK) adds a small interpreter-startup tax: tens of milliseconds, single-digit to tens of MB.</li>
+                    <li><strong>JVM</strong> (Java, Kotlin, Scala, Groovy, Clojure) pays for JVM boot and heap — <code>40–210&nbsp;MB</code> and up to a couple of seconds. Groovy and Clojure are the heaviest of the set.</li>
+                    <li><strong>BEAM</strong> (Erlang, Elixir) and JIT/runtime-heavy languages (Julia, Dart, Raku, PowerShell) sit in between, with Julia's JIT and PowerShell's runtime the most memory-hungry (<code>180–240&nbsp;MB</code>).</li>
+                </ul>
+                <p class="perf-caveat">
+                    Bash is the outlier at <code>~1.5&nbsp;s</code>: it shells out to
+                    <code>dd</code>/<code>od</code> and does the 64-bit arithmetic in shell, so it
+                    pays per-byte. CPU&nbsp;% above 100&nbsp;% means the runtime used
+                    multiple cores during startup (common for the JVM and BEAM).
+                </p>
+            </div>
+        </section>
+
         <section id="implementations" class="implementations">
             <h2>Implementations</h2>
             <div id="filter-bar" class="lang-filter" style="display:none">
@@ -202,6 +232,6 @@
         </div>
     </footer>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>

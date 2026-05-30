@@ -1,0 +1,108 @@
+V "GNAT Lib v10"
+M P W=b
+P SS ZX
+
+RN
+RV NO_IO
+RV NO_SECONDARY_STACK
+RV NO_DEFAULT_INITIALIZATION
+RV NO_DYNAMIC_SIZED_OBJECTS
+RV SPARK_05
+
+U oshash%b		oshash.adb		af6318ac NE OO SU
+W ada%s			ada.ads			ada.ali
+W ada.command_line%s	a-comlin.adb		a-comlin.ali
+W ada.streams%s		a-stream.adb		a-stream.ali
+W ada.streams.stream_io%s  a-ststio.adb		a-ststio.ali
+W ada.text_io%s		a-textio.adb		a-textio.ali
+W interfaces%s		interfac.ads		interfac.ali
+Z system.secondary_stack%s  s-secsta.adb	s-secsta.ali
+
+D ada.ads		20230707070819 76789da1 ada%s
+D a-comlin.ads		20230707070819 4aa66568 ada.command_line%s
+D a-except.ads		20230707070819 a7106115 ada.exceptions%s
+D a-ioexce.ads		20230707070819 e4a01f64 ada.io_exceptions%s
+D a-stream.ads		20230707070819 119b8fb3 ada.streams%s
+D a-ststio.ads		20230707070819 d6d358e8 ada.streams.stream_io%s
+D a-tags.ads		20230707070819 491b781d ada.tags%s
+D a-textio.ads		20230707070819 aef4d56d ada.text_io%s
+D a-unccon.ads		20230707070819 0e9b276f ada.unchecked_conversion%s
+D interfac.ads		20230707070819 5ab55268 interfaces%s
+D i-cstrea.ads		20230707070819 e53d8b8e interfaces.c_streams%s
+D oshash.adb		20260530175006 d6cc2d9a oshash%b
+D system.ads		20230707070819 4635ec04 system%s
+D s-crtl.ads		20230707070819 0ebbdb71 system.crtl%s
+D s-exctab.ads		20230707070819 54135002 system.exception_table%s
+D s-ficobl.ads		20230707070819 078245e4 system.file_control_block%s
+D s-parame.ads		20230707070819 48ec542b system.parameters%s
+D s-secsta.ads		20230707070819 20bbe636 system.secondary_stack%s
+D s-soflin.ads		20230707070819 a7318a92 system.soft_links%s
+D s-stache.ads		20230707070819 a37c21ec system.stack_checking%s
+D s-stalib.ads		20230707070819 09bd3940 system.standard_library%s
+D s-stoele.ads		20230707070819 2dc34a04 system.storage_elements%s
+D s-traent.ads		20230707070819 005bf670 system.traceback_entries%s
+D s-unstyp.ads		20230707070819 34867c83 system.unsigned_types%s
+D s-wchcon.ads		20230707070819 1b7d22d2 system.wch_con%s
+G a e
+G c Z b b [oshash standard 11 11 none]
+X 1 ada.ads
+16K9*Ada 20e8 12|5r6 5r33 6r6 6r33 7r6 7r33 8r6 8r33 46r15 47r15 52r15 62r12
+. 66r14 67r19 68r29
+X 2 a-comlin.ads
+36K13*Command_Line 144e21 12|5w10 5r37
+39V13*Argument_Count{natural} 12|55s7
+52V13*Argument{string} 12|61s25
+75U14*Set_Exit_Status 12|57s7
+X 5 a-stream.ads
+36K13*Streams 87e16 12|6r10 6r37 7w10 7r37 46r19 47r19 52r19 62r16 66r18
+. 67r23 68r33
+42M9*Stream_Element
+44I9*Stream_Element_Offset<long_long_integer> 12|19r15 23r31 26r53 50r15
+54A9*Stream_Element_Array(42M9)<44I9> 12|16r25 48r15 49r15
+X 6 a-ststio.ads
+39K21*Stream_IO 224e26 12|6w18 6r45 46r27 47r27 52r27 62r24 66r26 67r31 68r41
+44P9*File_Type 12|46r37
+47n23*In_File{47E9} 12|61r16
+58I9*Count<5|44I9> 12|47r37 66r36 68r51
+61I12*Positive_Count{58I9} 12|52r37 67r41
+74U14*Open 12|61s4
+80U14*Close 12|74s4
+104U14*Read 12|64s4 73s4
+122U14*Set_Index 12|72s4
+125V13*Size{58I9} 12|62s34
+X 8 a-textio.ads
+57K13*Text_IO 727e16 12|8w10 8r37
+64P9*File_Type
+179V13*Standard_Error{64P9} 12|56s17
+498U14*Put_Line 12|56s7
+508U14*Put_Line 12|80s4
+X 10 interfac.ads
+38K9*Interfaces 184e15 12|9w6 9r33
+77M9*Unsigned_64 12|16r54 17r15 18r15 26r27 34r26 37r20 51r15 76r12
+141V13*Shift_Left{77M9} 12|26s15
+145V13*Shift_Right{77M9} 12|41s15
+X 12 oshash.adb
+11U11*OSHash 11b11 81l5 81t11
+13N4 Chunk 48r42 49r42 66r43 68r58
+16V13 Sum{10|77M9} 16b13 16>18 31l8 31t11 77s12 78s12
+16a18 Data{5|54A9} 21r30 23r18 26r40
+17m7 Total{10|77M9} 28m10 28r19 30r14
+18m7 Word{10|77M9} 22m10 25m13 25r21 28r27
+19i7 Base{5|44I9} 23m10 26r46
+21i11 I{integer} 23r54
+24i14 B{integer} 26r76 26r86
+34V13 Hex{string} 34b13 34>18 44l8 44t11 80s14
+34m18 Value{10|77M9} 37r35
+35a7 Digits_Set{string} 40r24
+36a7 Result{string} 40m10 43r14
+37m7 V{10|77M9} 40r45 41m10 41r28
+39i11 I{integer} 40r18
+46p4 File{6|44P9} 61m10 61r10 62r40 64r10 72r15 73r10 74m11 74r11
+47i4 Size{6|58I9} 62m4 66r7 68r22 76r25
+48a4 First{5|54A9} 64m16 77r17 77r24
+49a4 Last{5|54A9} 73m16 78r17 78r23
+50i4 L1{5|44I9} 64m23 77r39
+50i8 L2{5|44I9} 73m22 78r37
+51m4 Hash{10|77M9} 76m4 80r19
+52i4 Last_Pos{6|61I12} 67m7 70m7 72r21
+

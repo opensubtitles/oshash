@@ -87,6 +87,7 @@ function serveSource(lang, res) {
         'fsharp': 'fsharp/oshash.fsx', 'fortran': 'fortran/oshash.f90',
         'asm': 'asm/oshash.asm', 'raku': 'raku/oshash.raku', 'vlang': 'vlang/oshash.v',
         'erlang': 'erlang/oshash.erl', 'tcl': 'tcl/oshash.tcl', 'awk': 'awk/oshash.awk',
+        'ada': 'ada/oshash.adb', 'scheme': 'scheme/oshash.scm',
     };
 
     const file = fileMap[lang];

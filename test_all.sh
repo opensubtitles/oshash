@@ -164,9 +164,11 @@ run_test() {
             # than a pipe so no subshell/tr fork lands inside the timed window.
             local tmp_time=$(mktemp) tmp_out=$(mktemp) t0 t1
             t0=$(date +%s.%N)
+            set +e   # a failing run must be recorded as FAIL, not abort the suite
             "$TIME_BIN" -f '%P|%M' -o "$tmp_time" \
                 timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null >"$tmp_out" 2>"$tmp_stderr"
             exit_code=$?
+            set -e
             t1=$(date +%s.%N)
             result=$(tr -d '[:space:]' < "$tmp_out")
             if [ "$exit_code" -eq 0 ] && [ -s "$tmp_time" ]; then
@@ -214,6 +216,13 @@ printf "  ${BOLD}%-20s%-7s%8s %6s %10s${NC}\n" "Language" "Result" "Time" "CPU" 
 echo -e "  ─────────────────────────────────────────────────────"
 
 # ─── Implementations are listed alphabetically (matching public/app.js) ───
+# Note: Ada and Scheme are built by tools/build_docker_langs.sh (no host
+# toolchain); they SKIP gracefully if that build hasn't been run.
+
+# Ada
+run_test "ada" "Ada" \
+    "" \
+    "$IMPL_DIR/ada/oshash"
 
 # AWK (gawk)
 run_test "awk" "AWK" \
@@ -385,6 +394,11 @@ run_test "rust" "Rust" \
 run_test "scala" "Scala" \
     "scalac -d $IMPL_DIR/scala $IMPL_DIR/scala/oshash.scala 2>/dev/null" \
     "scala -cp $IMPL_DIR/scala OSHash"
+
+# Scheme (Gambit) — built by tools/build_docker_langs.sh
+run_test "scheme" "Scheme" \
+    "" \
+    "$IMPL_DIR/scheme/oshash"
 
 # Swift
 run_test "swift" "Swift" \

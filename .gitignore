@@ -41,3 +41,8 @@ test-data/testfile_small.bin
 test-data/dummy-4gb.bin
 
 implementations/scala/*.tasty
+
+# Docker-built binaries (produced by tools/build_docker_langs.sh, not committed)
+implementations/ada/oshash
+implementations/scheme/oshash
+implementations/scheme/*.so*
