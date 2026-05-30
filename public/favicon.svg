@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ecc278"/>
+      <stop offset="1" stop-color="#c79338"/>
+    </linearGradient>
+  </defs>
+  <!-- gold tile, reads on both light and dark browser chrome -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#g)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="13.25" fill="none"
+        stroke="#7a5410" stroke-opacity="0.35" stroke-width="1.5"/>
+  <!-- octothorpe (#) — the hash mark -->
+  <g stroke="#17171c" stroke-width="6.4" stroke-linecap="round">
+    <line x1="27.5" y1="12" x2="22.5" y2="52"/>
+    <line x1="44.5" y1="12" x2="39.5" y2="52"/>
+    <line x1="13" y1="26" x2="51" y2="23.5"/>
+    <line x1="13" y1="41.5" x2="51" y2="39"/>
+  </g>
+</svg>
