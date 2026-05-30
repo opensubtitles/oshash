@@ -13,6 +13,9 @@ RUN sed -i 's/^# deb /deb /' /etc/apt/sources.list && \
         libssl-dev \
         gnat \
         gambc \
+        gobjc libobjc-11-dev \
+        gnucobol \
+        polyml libpolyml-dev \
     && rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/lib/gcc/x86_64-linux-gnu/10/adalib/libgnat.a \
            /usr/lib/gcc/x86_64-linux-gnu/10/adalib/libgnat-10.a

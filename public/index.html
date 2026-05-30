@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenSubtitles Hash - Source Codes &amp; Reference</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
     <header>
@@ -185,13 +185,15 @@
         <section id="performance" class="performance">
             <h2>Performance</h2>
             <p class="perf-intro">
-                Each implementation is timed on the same run — hashing
-                <code>breakdance.avi</code> (12.9&nbsp;MB) on the reference machine.
-                Because OSHash only reads the first and last 64&nbsp;KB, the actual
-                hashing is trivial: these numbers are dominated by
+                Each implementation is timed on the same run — hashing the
+                <strong>4&nbsp;GB</strong> test file on the reference machine.
+                Because OSHash only reads the first and last 64&nbsp;KB, even a 4&nbsp;GB
+                file is trivial work (a correct implementation seeks rather than
+                streams), so these numbers are dominated by
                 <strong>interpreter / VM startup and runtime footprint</strong>, not
                 throughput. That is exactly what makes them interesting — they show
-                the fixed cost of reaching for each language.
+                the fixed cost of reaching for each language, and confirm that none
+                choke on a multi-gigabyte input.
             </p>
             <div id="perf-highlights" class="perf-highlights"></div>
             <div class="perf-notes">
@@ -232,6 +234,6 @@
         </div>
     </footer>
 
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>

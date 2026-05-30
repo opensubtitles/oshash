@@ -6,6 +6,7 @@ const LANGUAGES = [
     { id: 'cpp', name: 'C++', original: true },
     { id: 'csharp', name: 'C#', original: true },
     { id: 'clojure', name: 'Clojure', isNew: true },
+    { id: 'cobol', name: 'COBOL', isNew: true },
     { id: 'lisp', name: 'Common Lisp', original: true },
     { id: 'crystal', name: 'Crystal', isNew: true },
     { id: 'd', name: 'D', isNew: true },
@@ -23,6 +24,7 @@ const LANGUAGES = [
     { id: 'lua', name: 'Lua', original: true },
     { id: 'nim', name: 'Nim', isNew: true },
     { id: 'nodejs', name: 'Node.js' },
+    { id: 'objc', name: 'Objective-C', isNew: true },
     { id: 'ocaml', name: 'OCaml', isNew: true },
     { id: 'pascal', name: 'Pascal', original: true },
     { id: 'perl', name: 'Perl', original: true },
@@ -35,6 +37,7 @@ const LANGUAGES = [
     { id: 'rust', name: 'Rust', original: true },
     { id: 'scala', name: 'Scala', original: true },
     { id: 'scheme', name: 'Scheme', isNew: true },
+    { id: 'sml', name: 'Standard ML', isNew: true },
     { id: 'swift', name: 'Swift', original: true },
     { id: 'tcl', name: 'Tcl', isNew: true },
     { id: 'typescript', name: 'TypeScript', isNew: true },
@@ -153,7 +156,7 @@ function renderImplementations(filter = 'all') {
         card.innerHTML = `
             <div class="impl-header" onclick="toggleCard(this)">
                 <span class="impl-lang">${lang.name}${lang.isNew ? '<span class="impl-new">NEW</span>' : ''}</span>
-                ${m ? `<span class="impl-time" title="Run time hashing breakdance.avi">${m.time}s</span>` : ''}
+                ${m ? `<span class="impl-time" title="Run time hashing the 4 GB test file">${m.time}s</span>` : ''}
                 <span class="impl-badge ${status.toLowerCase()}">${status}</span>
                 <span class="impl-toggle">&#9660;</span>
             </div>
@@ -163,7 +166,7 @@ function renderImplementations(filter = 'all') {
                     <span class="metric"><span class="metric-label">Time</span><span class="metric-val">${m.time}s</span></span>
                     <span class="metric"><span class="metric-label">CPU</span><span class="metric-val">${m.cpu}</span></span>
                     <span class="metric"><span class="metric-label">Peak memory</span><span class="metric-val">${m.mem} MB</span></span>
-                    <span class="metric-note">whole-process, hashing breakdance.avi (12.9&nbsp;MB)</span>
+                    <span class="metric-note">whole-process, hashing the 4&nbsp;GB test file</span>
                 </div>` : ''}
                 <div class="impl-code-wrap">
                     <button class="copy-btn" onclick="copySource('${lang.id}', this)" title="Copy to clipboard">
@@ -217,6 +220,7 @@ const SOURCE_FILES = {
     'asm': 'asm/oshash.asm', 'raku': 'raku/oshash.raku', 'vlang': 'vlang/oshash.v',
     'erlang': 'erlang/oshash.erl', 'tcl': 'tcl/oshash.tcl', 'awk': 'awk/oshash.awk',
     'ada': 'ada/oshash.adb', 'scheme': 'scheme/oshash.scm',
+    'objc': 'objc/oshash.m', 'sml': 'sml/oshash.sml', 'cobol': 'cobol/oshash.cob',
 };
 
 async function loadSource(langId) {

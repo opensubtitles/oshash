@@ -149,19 +149,30 @@ run_test() {
     # pipefail (inside the subshell) makes $? reflect the implementation's exit
     # code rather than tr's, so crashes and timeouts are detected reliably.
     local vec file expected label result exit_code stderr_out tmp_stderr short
-    local secs="-" cpu="-" mem="-" timed=0
+    local secs="-" cpu="-" mem="-"
+
+    # Benchmark against the largest available vector — the 4 GB file when it has
+    # been unpacked, otherwise breakdance.avi. A correct OSHash reads only the
+    # first and last 64 KB regardless of size, so this also flushes out any
+    # implementation that secretly streams the whole file.
+    local bench_file=""
+    for vec in "${TEST_VECTORS[@]}"; do
+        IFS='|' read -r file _ _ <<< "$vec"
+        [ -f "$file" ] && bench_file="$file"
+    done
+
     for vec in "${TEST_VECTORS[@]}"; do
         IFS='|' read -r file expected label <<< "$vec"
         [ -f "$file" ] || continue   # skip vectors whose file isn't present
         short="${label%% *}"
 
         tmp_stderr=$(mktemp)
-        if [ -n "$TIME_BIN" ] && [ "$timed" -eq 0 ]; then
-            # Time the run against the first reference vector. Wall time comes
-            # from a millisecond-resolution clock bracket (GNU time's %e is only
-            # 2 decimals, too coarse for the fast compiled binaries); CPU% and
-            # peak RSS still come from GNU time. Output goes to a file rather
-            # than a pipe so no subshell/tr fork lands inside the timed window.
+        if [ -n "$TIME_BIN" ] && [ "$file" = "$bench_file" ]; then
+            # Time the benchmark vector. Wall time comes from a millisecond-
+            # resolution clock bracket (GNU time's %e is only 2 decimals, too
+            # coarse for the fast compiled binaries); CPU% and peak RSS still
+            # come from GNU time. Output goes to a file rather than a pipe so no
+            # subshell/tr fork lands inside the timed window.
             local tmp_time=$(mktemp) tmp_out=$(mktemp) t0 t1
             t0=$(date +%s.%N)
             set +e   # a failing run must be recorded as FAIL, not abort the suite
@@ -177,7 +188,6 @@ run_test() {
                 secs=$(awk "BEGIN{printf \"%.3f\", $t1 - $t0}")           # seconds, ms resolution
             fi
             rm -f "$tmp_time" "$tmp_out"
-            timed=1
         else
             result=$(set -o pipefail; timeout "$timeout_sec" bash -c "$run_cmd \"$file\"" </dev/null 2>"$tmp_stderr" | tr -d '[:space:]')
             exit_code=$?
@@ -216,8 +226,9 @@ printf "  ${BOLD}%-20s%-7s%8s %6s %10s${NC}\n" "Language" "Result" "Time" "CPU" 
 echo -e "  ─────────────────────────────────────────────────────"
 
 # ─── Implementations are listed alphabetically (matching public/app.js) ───
-# Note: Ada and Scheme are built by tools/build_docker_langs.sh (no host
-# toolchain); they SKIP gracefully if that build hasn't been run.
+# Note: Ada, COBOL, Objective-C, Scheme and Standard ML are built by
+# tools/build_docker_langs.sh (no host toolchain); they SKIP gracefully if that
+# build hasn't been run.
 
 # Ada
 run_test "ada" "Ada" \
@@ -254,6 +265,11 @@ CLOJURE_CP="/home/claude/local/clojure/clojure.jar:/home/claude/local/clojure/sp
 run_test "clojure" "Clojure" \
     "" \
     "java -cp $CLOJURE_CP clojure.main $IMPL_DIR/clojure/oshash.clj" 60
+
+# COBOL — built by tools/build_docker_langs.sh
+run_test "cobol" "COBOL" \
+    "" \
+    "$IMPL_DIR/cobol/oshash"
 
 # Common Lisp (SBCL)
 run_test "lisp" "Common Lisp" \
@@ -340,6 +356,11 @@ run_test "nodejs" "Node.js" \
     "" \
     "node $IMPL_DIR/nodejs/oshash.js"
 
+# Objective-C — built by tools/build_docker_langs.sh
+run_test "objc" "Objective-C" \
+    "" \
+    "$IMPL_DIR/objc/oshash"
+
 # OCaml
 run_test "ocaml" "OCaml" \
     "ocamlopt -o $IMPL_DIR/ocaml/oshash $IMPL_DIR/ocaml/oshash.ml 2>/dev/null" \
@@ -399,6 +420,11 @@ run_test "scala" "Scala" \
 run_test "scheme" "Scheme" \
     "" \
     "$IMPL_DIR/scheme/oshash"
+
+# Standard ML (Poly/ML) — built by tools/build_docker_langs.sh
+run_test "sml" "Standard ML" \
+    "" \
+    "$IMPL_DIR/sml/oshash"
 
 # Swift
 run_test "swift" "Swift" \

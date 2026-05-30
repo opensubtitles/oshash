@@ -42,7 +42,10 @@ test-data/dummy-4gb.bin
 
 implementations/scala/*.tasty
 
-# Docker-built binaries (produced by tools/build_docker_langs.sh, not committed)
+# Docker-built binaries + bundled runtimes (tools/build_docker_langs.sh)
 implementations/ada/oshash
+implementations/objc/oshash
 implementations/scheme/oshash
-implementations/scheme/*.so*
+implementations/sml/oshash
+implementations/cobol/oshash
+implementations/*/lib*.so*
