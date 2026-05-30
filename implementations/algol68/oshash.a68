@@ -1,0 +1,65 @@
+CO OpenSubtitles Hash (OSHash) - Algol 68 implementation (Algol 68 Genie).
+   hash = file_size + sum_uint64_le(first 64KB) + sum_uint64_le(last 64KB).
+   The hash is kept as four 16-bit INT words with explicit carry (avoiding any
+   bignum so a68g's heap survives the 65536-word loop). The 64 KB chunks and the
+   size come from head/tail/stat piped through od (the shell-out the Bash/AWK
+   ports use), read back as decimal byte values. CO
+
+[1:4] INT hash;
+STRING digits = "0123456789abcdef";
+
+CO add a four-word vector into hash with carry CO
+PROC add4 = ([] INT v) VOID:
+BEGIN
+   INT carry := 0;
+   FOR i TO 4 DO
+      INT s = hash[i] + v[i] + carry;
+      hash[i] := s MOD 65536;
+      carry := s OVER 65536
+   OD
+END;
+
+CO sum a 64 KB chunk (8192 little-endian uint64 words) into hash CO
+PROC sum block = (STRING fname) VOID:
+BEGIN
+   FILE f;
+   open(f, fname, stand in channel);
+   FOR word TO 8192 DO
+      [1:8] INT b;
+      FOR k TO 8 DO get(f, b[k]) OD;
+      add4((b[1] + b[2] * 256, b[3] + b[4] * 256, b[5] + b[6] * 256, b[7] + b[8] * 256))
+   OD;
+   close(f)
+END;
+
+PROC hex4 = (INT w) STRING:
+BEGIN
+   [] INT dv = (4096, 256, 16, 1);
+   STRING r := "";
+   FOR i TO 4 DO r +:= digits[((w OVER dv[i]) MOD 16) + 1] OD;
+   r
+END;
+
+BEGIN
+   STRING path = argv(argc);
+   VOID(system("head -c 65536 '" + path + "' | od -An -v -t u1 -w1 > /tmp/a68_first"));
+   VOID(system("tail -c 65536 '" + path + "' | od -An -v -t u1 -w1 > /tmp/a68_last"));
+   VOID(system("stat -c%s '" + path + "' > /tmp/a68_size"));
+
+   FOR i TO 4 DO hash[i] := 0 OD;
+   sum block("/tmp/a68_first");
+   sum block("/tmp/a68_last");
+
+   FILE sf;
+   open(sf, "/tmp/a68_size", stand in channel);
+   LONG INT size;
+   get(sf, size);
+   close(sf);
+
+   [1:4] INT sw;
+   LONG INT sz := size;
+   FOR i TO 4 DO sw[i] := SHORTEN (sz MOD LONG 65536); sz := sz OVER LONG 65536 OD;
+   add4(sw);
+
+   print((hex4(hash[4]) + hex4(hash[3]) + hex4(hash[2]) + hex4(hash[1]), newline))
+END

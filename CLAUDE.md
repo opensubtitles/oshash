@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-A reference site for the OpenSubtitles Hash (OSHash) algorithm with verified implementations in 50 languages. Hosted at opensubtitles.github.io/oshash via GitHub Pages. Dev server runs on port 3005.
+A reference site for the OpenSubtitles Hash (OSHash) algorithm with verified implementations in 53 languages. Hosted at opensubtitles.github.io/oshash via GitHub Pages. Dev server runs on port 3005.
 
-Most implementations run on host toolchains. Nine (Ada, COBOL, Forth, Modula-2, Objective-C, Prolog, Scheme, Smalltalk, Standard ML) are built inside a throwaway Docker image — see "Docker-built languages" below.
+Most implementations run on host toolchains. Twelve (Ada, Algol 68, COBOL, Forth, Modula-2, Objective-C, Odin, Pony, Prolog, Scheme, Smalltalk, Standard ML) are built inside a throwaway Docker image — see "Docker-built languages" below.
 
 The OSHash algorithm: `hash = file_size + sum_uint64_le(first_64KB) + sum_uint64_le(last_64KB)` — unsigned 64-bit wrapping addition over little-endian uint64 values.
 
@@ -16,7 +16,7 @@ The OSHash algorithm: `hash = file_size + sum_uint64_le(first_64KB) + sum_uint64
 # Dev server with live reload (watches public/ for changes)
 node server.js --dev
 
-# Run the full test suite (compiles + runs all 50 implementations)
+# Run the full test suite (compiles + runs all 53 implementations)
 bash test_all.sh
 
 # Test a single implementation
@@ -49,17 +49,19 @@ python3 implementations/python/oshash.py test-data/testfile.bin
 | `test-data/testfile_small.bin` | 131,080 | `6e4ae67790577f76` |
 | `breakdance.avi` | 12,909,756 | `8e245d9679d31e12` |
 
-## Docker-built languages (Ada, COBOL, Forth, Modula-2, Objective-C, Prolog, Scheme, Smalltalk, Standard ML)
+## Docker-built languages (Ada, Algol 68, COBOL, Forth, Modula-2, Objective-C, Odin, Pony, Prolog, Scheme, Smalltalk, Standard ML)
 
 Toolchains we don't keep on the host are built inside a throwaway image
 (`tools/Dockerfile.builder`, Ubuntu 22.04 so binaries are glibc-compatible).
 `tools/build_docker_langs.sh` produces a host-runnable artifact for each:
 - Ada, Objective-C — statically linked native binaries.
-- Prolog (GNU Prolog) — native binary (links only libc/libm).
+- Prolog (GNU Prolog), Odin — native binaries (link only libc/libm).
 - Scheme (Gambit), Standard ML (Poly/ML), COBOL (GnuCOBOL), Modula-2 (GNU
-  Modula-2) — native binary with their runtime `.so`s bundled via `$ORIGIN` rpath.
-- Forth (gforth), Smalltalk (GNU Smalltalk) — the VM binary + its image
-  (`gforth.fi` / `gst.im`) are bundled; the run command points at them.
+  Modula-2), Pony — native binary with their runtime `.so`s bundled via `$ORIGIN`
+  rpath.
+- Forth (gforth), Smalltalk (GNU Smalltalk), Algol 68 (Algol 68 Genie) — the
+  VM/interpreter binary (+ image for gforth/gst) is bundled; the run command
+  points at it. ponyc and odin are downloaded into the image (not in apt).
 
 Pass `--rmi` to delete the image and reclaim `/var` afterwards (the artifacts
 persist). All built artifacts are gitignored; `test_all.sh` runs them if present

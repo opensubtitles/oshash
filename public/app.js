@@ -1,5 +1,6 @@
 const LANGUAGES = [
     { id: 'ada', name: 'Ada', isNew: true },
+    { id: 'algol68', name: 'Algol 68', isNew: true },
     { id: 'awk', name: 'AWK', isNew: true },
     { id: 'bash', name: 'Bash', original: true },
     { id: 'c', name: 'C', original: true },
@@ -28,9 +29,11 @@ const LANGUAGES = [
     { id: 'nim', name: 'Nim', isNew: true },
     { id: 'objc', name: 'Objective-C', isNew: true },
     { id: 'ocaml', name: 'OCaml', isNew: true },
+    { id: 'odin', name: 'Odin', isNew: true },
     { id: 'pascal', name: 'Pascal', original: true },
     { id: 'perl', name: 'Perl', original: true },
     { id: 'php', name: 'PHP', original: true },
+    { id: 'pony', name: 'Pony', isNew: true },
     { id: 'powershell', name: 'PowerShell', original: true },
     { id: 'prolog', name: 'Prolog', isNew: true },
     { id: 'python', name: 'Python', original: true },
@@ -226,7 +229,8 @@ const SOURCE_FILES = {
     'ada': 'ada/oshash.adb', 'scheme': 'scheme/oshash.scm',
     'objc': 'objc/oshash.m', 'sml': 'sml/oshash.sml', 'cobol': 'cobol/oshash.cob',
     'forth': 'forth/oshash.fs', 'prolog': 'prolog/oshash.pl', 'smalltalk': 'smalltalk/oshash.st',
-    'modula2': 'modula2/oshash.mod',
+    'modula2': 'modula2/oshash.mod', 'algol68': 'algol68/oshash.a68',
+    'odin': 'odin/oshash.odin', 'pony': 'pony/oshash.pony',
 };
 
 async function loadSource(langId) {

@@ -91,14 +91,33 @@ cd /repo/implementations/modula2
 gm2 -O2 -o oshash oshash.mod -flibs=m2pim,m2iso
 bundle_libs oshash
 strip oshash 2>/dev/null || true
+
+# Odin — native binary (links only libc/libm, runs on the host as-is)
+cd /repo/implementations/odin
+odin build oshash.odin -file -out:oshash -o:speed
+strip oshash 2>/dev/null || true
+
+# Pony — native binary; bundle any non-system libs
+cd /repo/implementations/pony
+ponyc . -b oshash -o . >/dev/null
+rm -f oshash.o
+bundle_libs oshash
+strip oshash 2>/dev/null || true
+
+# Algol 68 (Algol 68 Genie) — interpreted; bundle the a68g interpreter
+cd /repo/implementations/algol68
+cp -f "$(command -v a68g)" a68g-bin
+bundle_libs a68g-bin
 '
 
 BD="$REPO/public/downloads/breakdance.avi"
 I="$REPO/implementations"
 echo "Built (verifying against breakdance.avi, expect 8e245d9679d31e12):"
-for d in ada objc scheme sml cobol prolog modula2; do
+for d in ada objc scheme sml cobol prolog modula2 odin pony; do
     [ -x "$I/$d/oshash" ] && printf "  %-10s %s\n" "$d" "$("$I/$d/oshash" "$BD" 2>/dev/null)"
 done
+[ -x "$I/algol68/a68g-bin" ] && printf "  %-10s %s\n" "algol68" \
+    "$("$I/algol68/a68g-bin" --script "$I/algol68/oshash.a68" "$BD" 2>/dev/null)"
 [ -x "$I/forth/gforth-bin" ] && printf "  %-10s %s\n" "forth" \
     "$("$I/forth/gforth-bin" --image-file "$I/forth/gforth.fi" "$I/forth/oshash.fs" "$BD" 2>/dev/null)"
 [ -x "$I/smalltalk/gst-bin" ] && printf "  %-10s %s\n" "smalltalk" \

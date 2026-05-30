@@ -90,7 +90,8 @@ function serveSource(lang, res) {
         'ada': 'ada/oshash.adb', 'scheme': 'scheme/oshash.scm',
         'objc': 'objc/oshash.m', 'sml': 'sml/oshash.sml', 'cobol': 'cobol/oshash.cob',
         'forth': 'forth/oshash.fs', 'prolog': 'prolog/oshash.pl', 'smalltalk': 'smalltalk/oshash.st',
-        'modula2': 'modula2/oshash.mod',
+        'modula2': 'modula2/oshash.mod', 'algol68': 'algol68/oshash.a68',
+        'odin': 'odin/oshash.odin', 'pony': 'pony/oshash.pony',
     };
 
     const file = fileMap[lang];

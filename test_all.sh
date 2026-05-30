@@ -226,14 +226,19 @@ printf "  ${BOLD}%-20s%-7s%8s %6s %10s${NC}\n" "Language" "Result" "Time" "CPU" 
 echo -e "  ─────────────────────────────────────────────────────"
 
 # ─── Implementations are listed alphabetically (matching public/app.js) ───
-# Note: Ada, COBOL, Forth, Modula-2, Objective-C, Prolog, Scheme, Smalltalk and
-# Standard ML are built by tools/build_docker_langs.sh (no host toolchain); they
-# SKIP gracefully if that build hasn't been run.
+# Note: Ada, Algol 68, COBOL, Forth, Modula-2, Objective-C, Odin, Pony, Prolog,
+# Scheme, Smalltalk and Standard ML are built by tools/build_docker_langs.sh (no
+# host toolchain); they SKIP gracefully if that build hasn't been run.
 
 # Ada
 run_test "ada" "Ada" \
     "" \
     "$IMPL_DIR/ada/oshash"
+
+# Algol 68 (Algol 68 Genie) — built by tools/build_docker_langs.sh
+run_test "algol68" "Algol 68" \
+    "" \
+    "$IMPL_DIR/algol68/a68g-bin --script $IMPL_DIR/algol68/oshash.a68"
 
 # AWK (gawk)
 run_test "awk" "AWK" \
@@ -376,6 +381,11 @@ run_test "ocaml" "OCaml" \
     "ocamlopt -o $IMPL_DIR/ocaml/oshash $IMPL_DIR/ocaml/oshash.ml 2>/dev/null" \
     "$IMPL_DIR/ocaml/oshash"
 
+# Odin — built by tools/build_docker_langs.sh
+run_test "odin" "Odin" \
+    "" \
+    "$IMPL_DIR/odin/oshash"
+
 # Pascal (Free Pascal)
 run_test "pascal" "Pascal" \
     "fpc -o$IMPL_DIR/pascal/oshash $IMPL_DIR/pascal/oshash.pas -v0 2>/dev/null" \
@@ -390,6 +400,11 @@ run_test "perl" "Perl" \
 run_test "php" "PHP" \
     "" \
     "php $IMPL_DIR/php/oshash.php"
+
+# Pony — built by tools/build_docker_langs.sh
+run_test "pony" "Pony" \
+    "" \
+    "$IMPL_DIR/pony/oshash"
 
 # PowerShell
 run_test "powershell" "PowerShell" \

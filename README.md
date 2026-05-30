@@ -1,6 +1,6 @@
 # OSHash — OpenSubtitles Hash
 
-The **OpenSubtitles Hash** (OSHash) is a fast file identification algorithm used by [OpenSubtitles](https://www.opensubtitles.org) to match video files with subtitles. This repository contains **50 verified implementations** across every major programming language, a test suite, and a reference website.
+The **OpenSubtitles Hash** (OSHash) is a fast file identification algorithm used by [OpenSubtitles](https://www.opensubtitles.org) to match video files with subtitles. This repository contains **53 verified implementations** across every major programming language, a test suite, and a reference website.
 
 **Website:** [opensubtitles.github.io/oshash](https://opensubtitles.github.io/oshash)
 
@@ -23,16 +23,16 @@ hash = file_size + sum_uint64_le(first_64KB) + sum_uint64_le(last_64KB)
 
 | Category | Languages |
 |----------|-----------|
-| **Systems** | [C](implementations/c/oshash.c), [C++](implementations/cpp/oshash.cpp), [Rust](implementations/rust/src/main.rs), [Zig](implementations/zig/oshash.zig), [Go](implementations/go/oshash.go), [D](implementations/d/oshash.d), [Nim](implementations/nim/oshash.nim), [Crystal](implementations/crystal/oshash.cr), [Swift](implementations/swift/oshash.swift) |
+| **Systems** | [C](implementations/c/oshash.c), [C++](implementations/cpp/oshash.cpp), [Rust](implementations/rust/src/main.rs), [Zig](implementations/zig/oshash.zig), [Go](implementations/go/oshash.go), [D](implementations/d/oshash.d), [Nim](implementations/nim/oshash.nim), [Crystal](implementations/crystal/oshash.cr), [Swift](implementations/swift/oshash.swift), [Odin](implementations/odin/oshash.odin), [Pony](implementations/pony/oshash.pony) |
 | **JVM** | [Java](implementations/java/OSHash.java), [Kotlin](implementations/kotlin/oshash.kt), [Scala](implementations/scala/oshash.scala), [Groovy](implementations/groovy/oshash.groovy), [Clojure](implementations/clojure/oshash.clj) |
 | **.NET** | [C#](implementations/csharp/oshash.cs), [F#](implementations/fsharp/oshash.fsx) |
 | **Scripting** | [Python](implementations/python/oshash.py), [JavaScript](implementations/nodejs/oshash.js), [TypeScript](implementations/typescript/oshash.ts), [Ruby](implementations/ruby/oshash.rb), [PHP](implementations/php/oshash.php), [Perl](implementations/perl/oshash.pl), [Lua](implementations/lua/oshash.lua), [Elixir](implementations/elixir/oshash.exs), [R](implementations/r/oshash.R), [Dart](implementations/dart/oshash.dart), [Julia](implementations/julia/oshash.jl), [Raku](implementations/raku/oshash.raku) |
 | **Shell** | [Bash](implementations/bash/oshash.sh), [PowerShell](implementations/powershell/oshash.ps1), [AWK](implementations/awk/oshash.awk), [Tcl](implementations/tcl/oshash.tcl) |
 | **Functional** | [Haskell](implementations/haskell/oshash.hs), [OCaml](implementations/ocaml/oshash.ml), [Common Lisp](implementations/lisp/oshash.lisp), [Erlang](implementations/erlang/oshash.erl), [Scheme](implementations/scheme/oshash.scm), [Standard ML](implementations/sml/oshash.sml) |
 | **Logic / OO / stack** | [Prolog](implementations/prolog/oshash.pl), [Smalltalk](implementations/smalltalk/oshash.st), [Forth](implementations/forth/oshash.fs) |
-| **Other** | [Ada](implementations/ada/oshash.adb), [COBOL](implementations/cobol/oshash.cob), [Objective-C](implementations/objc/oshash.m), [Pascal](implementations/pascal/oshash.pas), [Vala](implementations/vala/oshash.vala), [Fortran](implementations/fortran/oshash.f90), [V](implementations/vlang/oshash.v), [x86-64 Assembly](implementations/asm/oshash.asm) |
+| **Other** | [Ada](implementations/ada/oshash.adb), [Algol 68](implementations/algol68/oshash.a68), [COBOL](implementations/cobol/oshash.cob), [Modula-2](implementations/modula2/oshash.mod), [Objective-C](implementations/objc/oshash.m), [Pascal](implementations/pascal/oshash.pas), [Vala](implementations/vala/oshash.vala), [Fortran](implementations/fortran/oshash.f90), [V](implementations/vlang/oshash.v), [x86-64 Assembly](implementations/asm/oshash.asm) |
 
-> **Ada**, **COBOL**, **Forth**, **Modula-2**, **Objective-C**, **Prolog**, **Scheme** (Gambit), **Smalltalk** and **Standard ML** are built inside a throwaway Docker image (no host toolchain) — run `bash tools/build_docker_langs.sh` once; pass `--rmi` to delete the image afterwards. The resulting binaries run on the host on their own.
+> **Ada**, **Algol 68**, **COBOL**, **Forth**, **Modula-2**, **Objective-C**, **Odin**, **Pony**, **Prolog**, **Scheme** (Gambit), **Smalltalk** and **Standard ML** are built inside a throwaway Docker image (no host toolchain) — run `bash tools/build_docker_langs.sh` once; pass `--rmi` to delete the image afterwards. The resulting binaries run on the host on their own.
 
 Every implementation:
 - Takes a file path as a CLI argument
